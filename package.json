@@ -1,0 +1,24 @@
+{
+  "name": "tymeline",
+  "version": "1.0.0",
+  "description": "modular timeline",
+  "main": "index.ts",
+  "scripts": {
+    "start": "parcel src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "timeline",
+    "modular",
+    "typescript",
+    "ts"
+  ],
+  "author": "mormotomyia",
+  "license": "GPLv3",
+  "devDependencies": {
+    "typescript": "^4.1.4"
+  },
+  "dependencies": {
+    "customhtmlbase": "^1.0.4"
+  }
+}
