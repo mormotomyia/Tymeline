@@ -19,6 +19,6 @@
     "typescript": "^4.1.4"
   },
   "dependencies": {
-    "customhtmlbase": "^1.0.4"
+    "customhtmlbase": "^1.0.8"
   }
 }
