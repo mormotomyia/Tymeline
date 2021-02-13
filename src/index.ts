@@ -1,3 +1,4 @@
+import moment from "moment";
 import { MormoTable } from "./components/mormoTable";
 import { MovableObject } from "./components/movableObject";
 

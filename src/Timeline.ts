@@ -1,5 +1,8 @@
+import moment from "moment";
+import TimeStep from "./components/TimeStep";
 import { IObject } from "./interfaces/IObject";
 
+const MAX = 1000;
 const print = (...args:any) => console.log(args)
 
 Date.prototype.getWeek = function() {
@@ -20,6 +23,8 @@ Date.prototype.getWeek = function() {
     date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
     return date.getFullYear();
   }
+
+
 
 
 
@@ -58,6 +63,7 @@ export class Timeline {
     domElement: IObject;
     topScale: ScaleOptions;
     bottomScale: ScaleOptions;
+    timestep: TimeStep;
     constructor(dom:IObject,start:Date,end:Date){
         //stupid initializer!
         this.topScale = ScaleOptions.months
@@ -66,168 +72,41 @@ export class Timeline {
         this.left = start;
         this.right = end;
         this.domElement = dom;
-        this.applyTimescale()
-    }
-
-    private get getWeek():number{
-        return (this.right.getWeek()-this.left.getWeek())
-    }
-
-    private get getDay():number{
-        return this.left.getMonth()!==this.right.getMonth()?daysInMonth(this.left)-this.left.getDate()+ this.right.getDate():this.right.getDate()-this.left.getDate();
-    }
-
-    private get getHours(){
-        return (this.right.getTime()-this.left.getTime())/(1000*3600)
-    }
-
-    private get getMinutes(){
-        return (this.right.getTime()-this.left.getTime())/(1000*60)
-    }
-
-    private get getSeconds(){
-        return (this.right.getTime()-this.left.getTime())/(1000)
-    }
-
-
-    createBorderRegions(): { translateFactor: number; leftOffset: number; endElement:HTMLElement }{
-        const offsetfactor = new Date(2000,11,31,23,59,59).[nextTimeScale.[this.bottomScale]]()+1
-        const leftOffset = this.left.[nextTimeScale.[this.bottomScale]]()/offsetfactor
-        const rightOffset = this.right.[nextTimeScale.[this.bottomScale]]()/offsetfactor
-        const totalOffset = -leftOffset + rightOffset
-        const translateFactor = Math.floor(this.domElement.timeContainer.getBoundingClientRect().width/(this.[this.bottomScale]+totalOffset))
-
-
-        const startElement = document.createElement('div')
-        startElement.style.width = `${translateFactor}px`
-        startElement.classList.add('mormo-time-element')
-        startElement.classList.add(this.bottomScale.split('get')[1])
-        startElement.innerHTML = this.left.[this.bottomScale]()
-        
-        console.log(new Date(2000,11,31,23,59,59).[nextTimeScale.[this.bottomScale]]())
-        
-        console.log(rightOffset)
-        
-        
-        
-        console.log(totalOffset);
-        
-        startElement.style.transform = `translate(${translateFactor* - leftOffset}px)`
-        this.domElement.timeContainer.appendChild(startElement);
-
-        
         
 
-        // console.log(translateFactor)
-        const endElement = document.createElement('div')
-        endElement.style.width = `${translateFactor}px`
-        endElement.classList.add('mormo-time-element')
-        endElement.classList.add(this.bottomScale.split('get')[1])
-        // this.domElement.timeContainer.appendChild(endElement);
-        endElement.innerHTML = this.left[this.bottomScale]()+this.[this.bottomScale]
-        endElement.style.transform = `translate(${translateFactor*(this.[this.bottomScale]  - rightOffset)}px)`
-
-
-        return {translateFactor:translateFactor, leftOffset:leftOffset, endElement: endElement}
-
-
-
-        // console.log(this.left.[this.topScale]())
-        // timeElement.innerHTML = this.left[this.topScale]()+index
-
-        // console.log('___')
-        // console.log(this.left.[this.bottomScale]())
-        // console.log(this.[this.bottomScale])
-
-        // timeElement.style.width = `${Math.floor(this.domElement.timeContainer.getBoundingClientRect().width/this.[this.topScale]).toString()}px`
-
-
-
+        this.timestep = new TimeStep(this.left,this.right,1000*3600*24)
+        console.log(this.timestep.scale)
+        console.log(this.timestep.step)
+        console.log(this.timestep.isMajor())
         
     }
 
 
-    render(): void{
-        
-        const { translateFactor, leftOffset, endElement} = this.createBorderRegions();
-        
-
-        for (let index = 1; index < this.[this.bottomScale]; index++) {
-            const timeElement = document.createElement('div')
-            timeElement.classList.add('mormo-time-element')
-            timeElement.classList.add(this.bottomScale.split('get')[1])
-            timeElement.innerHTML = (<number>this.left.[this.bottomScale]()+index).toString()
-
-         
-
-            
-            timeElement.style.width = `${translateFactor}px`
-            timeElement.style.transform = `translate(${translateFactor*(index - leftOffset)}px)`
-                 
-            this.domElement.timeContainer.appendChild(timeElement);
+    render():void
+    render(start:moment.Moment,end:moment.Moment,minStep:number):void
+    render(start?:moment.Moment,end?:moment.Moment,minStep?:number): void{
+        console.log(this.domElement.timeContainer)
+        let count = 0;
+        if (start&&end&&minStep){
+        this.timestep.updateScale(start,end,minStep)
+        this.timestep.start();
+        while (this.timestep.hasNext()&& count < MAX){
+            this.timestep.next()
+            console.log(this.timestep.isMajor())
+            console.log(this.timestep.getCurrent())
+            // className = this.timestep.getClassName();
         }
-        this.domElement.timeContainer.appendChild(endElement);
-
-
-
-
-
-        console.log(Math.abs(((11 - 30) % daysInMonth(this.left))))
-
-
-
-        
     }
-
-
-    applyTransform(transform:Transform)
-    {
-        this.domElement.timeContainer.style.transform = `matrix(${transform.scale},0,0,1,${transform.deltaX},${transform.deltaY}`
-    }
-
-
-    get timeframe(){
-        return (this.right.getTime()-this.left.getTime())/1000;
-    }
-
-    applyTimescale(){
-        console.log(this.timeframe)
-        if(this.timeframe>3600*24*365*2){
-            console.log('a')
-            this.topScale=ScaleOptions.years
-            this.bottomScale=ScaleOptions.months
-            //years
-        }else if(this.timeframe>3600*24*60){
-            // months
-            console.log('b')
-            this.topScale=ScaleOptions.months
-            this.bottomScale=ScaleOptions.weeks
-        }else if (this.timeframe>3600*24*10){
-
-            // days
-            console.log('c')
-            this.topScale=ScaleOptions.weeks
-            this.bottomScale=ScaleOptions.days
-        }else if (this.timeframe>3600*24*3){
-            //hours
-            this.topScale=ScaleOptions.days
-            this.bottomScale=ScaleOptions.hours
-        }else if (this.timeframe>3600*12){
-            // minutes
-            this.topScale=ScaleOptions.hours
-            this.bottomScale=ScaleOptions.minutes
-        }
         else {
-            // minutes
-            this.topScale=ScaleOptions.minutes
-            this.bottomScale=ScaleOptions.seconds
+            this.timestep.start();
+            while (this.timestep.hasNext()&& count < MAX){
+                this.timestep.next()
+                console.log(this.timestep.isMajor())
+                console.log(this.timestep.getCurrent())
+                // className = this.timestep.getClassName();
+            }
         }
-    
-
-        this.timeframe
+        
     }
-
-   
 }
-
 

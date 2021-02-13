@@ -1,7 +1,7 @@
 import { IBaseTableData, ITableData } from "../interfaces/IObject";
 import { ITableOptions } from "../interfaces/ITableOptions";
 import { TableData } from "./movableObject";
-import { Timeline } from "../Timeline";
+import { Timeline, Transform } from "../Timeline";
 import Component from "./Component";
 
 export class MormoTable extends Component{
@@ -39,13 +39,16 @@ export class MormoTable extends Component{
         this.dom.innerContainer.appendChild(this.dom.tableContainer)
         this.dom.root.appendChild(this.dom.innerContainer)
         
+        this.dom.root.ondrag = this.drag.bind(this)
+        this.dom.root.ondragstart = this.drag.bind(this)
+        this.dom.root.onwheel = this.changeZoom.bind(this)
+        this.dom.root.onmousedown = this.drag.bind(this)
+        this.dom.root.onmousemove = this.drag.bind(this)
+        this.dom.root.oncontextmenu = (event:Event) => event.preventDefault();
         
-        this.dom.root.onwheel = this.changeZoom
-        
-
         // propertyClasses
-
         this.timeline = new Timeline(this.dom,this.tableOptions.dates.start,this.tableOptions.dates?.end)
+        
         
         console.log(this.timeline.left)
         console.log(this.timeline.right)
@@ -94,6 +97,16 @@ export class MormoTable extends Component{
         }
 
 
+    }
+
+    drag(event:MouseEvent){
+        console.log(event.buttons)
+        if (event.buttons == 1){
+            // console.log(this.timeline.timeframe)
+            console.log(event.movementX)
+            // const transform = new Transform(this.timeline.timeframe*event.movementX,0,1)
+            // this.timeline.applyTransform(transform)
+        }
     }
 
     changeZoom(event:WheelEvent){
@@ -152,10 +165,7 @@ export class MormoTable extends Component{
     render(){
         this.initialized = true;
         this.root?.appendChild(this.dom.root)
-
-        console.log(new Date().getMilliseconds())
         this.timeline.render();
-        console.log(new Date().getMilliseconds())
         // this.dom.tableContainer.appendChild(new TableElement())
     }
 
@@ -163,9 +173,10 @@ export class MormoTable extends Component{
     destroy(){
 
     }
+
     redraw(){
         if(this.initialized){
-            
+            this.timeline.render();
             // do something
         }
 
