@@ -20,7 +20,7 @@ export class MormoTable extends Component{
         this.tableOptions = options;
         
         if (this.tableOptions?.dates===undefined){
-            this.tableOptions.dates = {start: new Date(new Date().getTime()-(12*24*3600*1000)), end:new Date(new Date().getTime()+(7*24*3600*1000))};
+            this.tableOptions.dates = {start: new Date(new Date().getTime()-(7*24*3600*1000)), end:new Date(new Date().getTime()+(7*24*3600*1000))};
         }
 
         // this.dom.
