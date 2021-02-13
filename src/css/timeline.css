@@ -1,0 +1,13 @@
+.mormo-time-element{
+    border-width:5px;
+    text-align:center;
+    border-style: none;
+    border-left-style: solid;
+    border-color: black;
+    position: absolute;
+    box-sizing: border-box;
+    /* timeElement.style.borderWidth = 'none '
+            timeElement.style.borderStyle = 'none'
+            timeElement.style.borderLeftStyle = 'solid'
+            timeElement.style.borderColor = 'Black' */
+}

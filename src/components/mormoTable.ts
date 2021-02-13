@@ -1,109 +1,28 @@
+import { IBaseTableData, ITableData } from "../interfaces/IObject";
+import { ITableOptions } from "../interfaces/ITableOptions";
+import { TableData } from "./movableObject";
+import { Timeline } from "../Timeline";
 import Component from "./Component";
-import { IBaseTableData, ITableData } from "./IObject";
-
-
-
-
-
-
-export class TableData implements ITableData {
-    id: string | number;
-    length: number;
-    start: number;
-    content: { text: string; };
-    constructor(id:number|string,length:number,start:number,content:{text:string}){
-        this.id = id;
-        this.length = length
-        this.start = start;
-        this.content = content;
-    }
-}
-
-export class MovableObject extends Component{
-    constructor(){
-        super()
-    }
-
-    destroy(){
-
-    }
-    redraw(){
-        
-    }
-}
-
-
-export interface TableOptions{
-    size:{height:number,width:number};
-    colorschema?:{background:string,text:string,borders:string}
-}
-
-
-export class TableElement extends Component{
-    content: { text: string; };
-    id: string | number;
-    length: number;
-
-    constructor(id:string|number,length:number,start:number,content:{text:string}){
-        super();
-        // this.root = container
-        this.id = id;
-        this.length = length;
-        this.content = content;
-        this.dom.root = document.createElement('div');
-
-        this.dom.root.onmousemove = this.changeMouseOnEdgeLeftRight
-    }
-    destroy(){
-
-    }
-    redraw(){
-        if(this.initialized){
-            // do something
-        }
-
-    }
-
-    changeMouseOnEdgeLeftRight(event:MouseEvent){
-            
-        // console.log(<HTMLElement>event.target?.)
-        const element = <HTMLElement>event.target;
-        const offsetLeft = element.getBoundingClientRect().left
-        
-        
-        if (element.clientWidth+offsetLeft-event.clientX<10){
-            element.style.cursor = 'e-resize' 
-        }
-        else if (element.offsetWidth+offsetLeft - event.clientX > element.offsetWidth-10){
-            element.style.cursor = 'W-resize' 
-        }
-    
-        else {
-            element.style.cursor = 'default' 
-        }
-
-        // console.log(event.clientX)
-        // console.log(event.clientY)
-        // console.log(<HTMLElement>event.target.clientWidth)
-        // console.log(<HTMLElement>event.target.clientWidth)
-
-    }
-}
-
 
 export class MormoTable extends Component{
    
     // body: HTMLElement;
     
-    tableOptions: TableOptions | undefined;
+    tableOptions: ITableOptions | undefined;
     tableData: Map<string,TableData> = new Map();
+    timeline: Timeline;
     // tableData: Array<{ id: number; length: number; text: string; }> = [];
-    constructor(container:HTMLElement,options?:TableOptions){
+    constructor(container:HTMLElement,options:ITableOptions){
+
         super()
         this.root = container
         this.dom  = {};
         this.tableOptions = options;
         
+        if (this.tableOptions?.dates===undefined){
+            this.tableOptions.dates = {start: new Date(new Date().getTime()-(12*24*3600*1000)), end:new Date(new Date().getTime()+(7*24*3600*1000))};
+        }
+
         // this.dom.
         // this.body = document.createElement(elementType)
         this.dom.root = document.createElement('div')
@@ -114,16 +33,24 @@ export class MormoTable extends Component{
         this.dom.timeContainer.classList.add('mormo-time')
         this.dom.tableContainer.classList.add('mormo-table')
         this.dom.tableRows.classList.add('mormo-table-rows')
-
+        
         this.dom.tableContainer.appendChild(this.dom.timeContainer)
         this.dom.tableContainer.appendChild(this.dom.tableRows)
         this.dom.innerContainer.appendChild(this.dom.tableContainer)
         this.dom.root.appendChild(this.dom.innerContainer)
-
-
-        this.dom.root.onwheel = this.changeZoom
-
         
+        
+        this.dom.root.onwheel = this.changeZoom
+        
+
+        // propertyClasses
+
+        this.timeline = new Timeline(this.dom,this.tableOptions.dates.start,this.tableOptions.dates?.end)
+        
+        console.log(this.timeline.left)
+        console.log(this.timeline.right)
+
+
         // this.dom.root.addEventListener('wheel',this.changeZoom)
         this.styleTimeline()
 
@@ -159,6 +86,8 @@ export class MormoTable extends Component{
         this.dom.timeContainer.style.border="solid"
         this.dom.timeContainer.style.borderWidth="thin"
         this.dom.timeContainer.style.borderTopWidth="thick"
+        this.dom.timeContainer.style.overflow='hidden'
+        // this.dom.timeContainer.style.display="inline-flex"
 
         if (this.tableOptions?.colorschema){
             this.dom.timeContainer.style.borderColor=this.tableOptions?.colorschema?.borders;
@@ -220,10 +149,13 @@ export class MormoTable extends Component{
         console.log(this.tableData)
     }
 
-    draw(){
+    render(){
         this.initialized = true;
-       
         this.root?.appendChild(this.dom.root)
+
+        console.log(new Date().getMilliseconds())
+        this.timeline.render();
+        console.log(new Date().getMilliseconds())
         // this.dom.tableContainer.appendChild(new TableElement())
     }
 
@@ -241,6 +173,3 @@ export class MormoTable extends Component{
 
 
 }
-
-
-

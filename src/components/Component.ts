@@ -1,4 +1,4 @@
-import { IObject } from "./IObject";
+import { IObject } from "../interfaces/IObject";
 
 export default abstract class Component{
     options: Object|null;
