@@ -1,7 +1,7 @@
 import Component from "./Component";
 import {  ITableData } from "../interfaces/IObject";
 import { } from "../interfaces/ITableOptions";
-import { } from "../Timeline";
+import { } from "./Timeline";
 
 
 

@@ -1,5 +1,16 @@
+import { DomItems } from "../components/DomItems";
+
+export interface IDomItems{
+    foreground : HTMLElement|null
+    legendMajor: Array<HTMLElement>
+    legendMinor: Array<HTMLElement>
+    redundantLegendMajor: Array<HTMLElement>
+    redundantLegendMinor: Array<HTMLElement>
+}
+
 export interface IObject{
-    [key: string]: HTMLElement;
+    domItems:DomItems
+    dom:{[key: string]: HTMLElement};
 }
 export interface IBaseTableData{
     length: number;
@@ -9,4 +20,6 @@ export interface IBaseTableData{
 export interface ITableData extends IBaseTableData{
     id: string | number;
 }
+
+
 

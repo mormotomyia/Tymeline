@@ -7,3 +7,4 @@ bg.render();
 
 bg.setTable([{id:1,length:50,content:{text:'asd'},start:0}, {id:2,length:50,content:{text:'asd'},start:5}])
 bg.updateTable({1:{length:50,content:{text:'asdff'},start:0},2:{length:500,content:{text:'asdf'},start:5}})
+
