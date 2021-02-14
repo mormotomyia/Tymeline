@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { DomItems } from "../components/base/DomItems";
+import { TimelineDomItems } from "../components/base/DomItems";
 
 export interface IDomItems{
     foreground : HTMLElement|null
@@ -9,8 +9,8 @@ export interface IDomItems{
     redundantLegendMinor: Array<HTMLElement>
 }
 
-export interface IObject{
-    domItems:DomItems
+export interface IProps{
+    domItems:TimelineDomItems
     dom:{[key: string]: HTMLElement};
 }
 export interface IBaseTableData{

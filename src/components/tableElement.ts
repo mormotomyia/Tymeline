@@ -1,19 +1,20 @@
-import Component from "./base/Component";
 
-export class TableElement extends Component{
+
+export class TableElement{
     content: { text: string; };
     id: string | number;
     length: number;
+    initialized: boolean = false;
 
     constructor(id:string|number,length:number,start:number,content:{text:string}){
-        super();
+
         // this.root = container
         this.id = id;
         this.length = length;
         this.content = content;
-        this.dom.root = document.createElement('div');
+        // this.props.root = document.createElement('div');
 
-        this.dom.root.onmousemove = this.changeMouseOnEdgeLeftRight
+        // this.props.root.onmousemove = this.changeMouseOnEdgeLeftRight
     }
     destroy(){
 

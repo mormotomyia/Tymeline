@@ -1,7 +1,8 @@
-import moment from "moment";
+
 import TimeStep from "./TimeStep";
-import { IObject } from "../../interfaces/IObject";
+import { IProps } from "../../interfaces/IObject";
 import dayjs, { Dayjs } from "dayjs";
+import { ComponentCollection } from "../base/ComponentCollection";
 
 const MAX = 1000;
 const print = (...args:any) => console.log(args)
@@ -62,15 +63,17 @@ function daysInMonth (date:Date) {
 export class Timeline {
     private left: dayjs.Dayjs;
     private right: dayjs.Dayjs;
-    domElement: IObject;
+    domElement: IProps;
 
     private topScale: ScaleOptions;
     private bottomScale: ScaleOptions;
     private timestep: TimeStep;
-    constructor(dom:IObject,start:Date,end:Date){
+    components: any;
+    constructor(dom:IProps,components:ComponentCollection,start:Date,end:Date){
         //stupid initializer!
         this.topScale = ScaleOptions.months
         this.bottomScale = ScaleOptions.weeks
+        this.components = components
        
         this.left = dayjs(start);
         this.right = dayjs(end);
@@ -82,6 +85,18 @@ export class Timeline {
         console.log(this.timestep.step)
         console.log(this.timestep.isMajor())
         
+    }
+
+    get start():dayjs.Dayjs{
+        return this.left;
+    }
+
+    get end():dayjs.Dayjs{
+        return this.right
+    }
+
+    get range():{start:dayjs.Dayjs,end:dayjs.Dayjs}{
+        return {start:this.start,end:this.end}
     }
 
     centerOnToday(){

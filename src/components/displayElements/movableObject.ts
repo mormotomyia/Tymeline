@@ -1,4 +1,4 @@
-import Component from "../base/Component";
+
 import {  ITableData } from "../../interfaces/IObject";
 import { } from "../../interfaces/ITableOptions";
 import { } from "../timeline/Timeline";
@@ -49,9 +49,8 @@ export class TableData implements ITableData {
     }
 }
 
-export class MovableObject extends Component{
+export class MovableObject{
     constructor(){
-        super()
     }
 
     destroy(){

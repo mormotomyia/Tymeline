@@ -1,6 +1,6 @@
 import { IDomItems } from "../../interfaces/IObject"
 
-export class DomItems implements IDomItems{
+export class TimelineDomItems implements IDomItems{
     foreground : HTMLElement|null
     legendMajor: Array<HTMLElement>
     legendMinor: Array<HTMLElement>

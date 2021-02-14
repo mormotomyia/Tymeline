@@ -1,11 +1,18 @@
-import { IBaseTableData, ITableData, ITableDataEntry } from "../../interfaces/IObject"
+import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../../interfaces/IObject"
+import { ComponentCollection } from "../base/ComponentCollection";
+import { Timeline } from "../timeline/Timeline";
 import { TableData } from "./movableObject"
 
 export class DataManager{
     tableData: Map<string,TableData> = new Map();
-    dom: HTMLElement
-    constructor(root:HTMLElement){
-        this.dom = root
+    props: IProps;
+    components : ComponentCollection
+
+
+    constructor(props:IProps,components:ComponentCollection){
+        this.components = components
+        this.props = props
+        this.props.dom.root.appendChild(document.createElement('h3'))
     }
 
 
@@ -14,7 +21,7 @@ export class DataManager{
 
     updateTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
         console.log(objects)
-        
+        this.getVisibleElements()
         if (Array.isArray(objects)){
             objects.forEach((element) => {
             if (element.length)
@@ -53,10 +60,23 @@ export class DataManager{
 
 
     render():void{
-
+        this.getVisibleElements()
     }
 
     private getVisibleElements():Map<string,TableData>{
-        
+        this.tableData.forEach((value,key,map) => {
+            // console.log(value)
+            // console.log(this.components.timeLine!.start)
+            // console.log( value.start > this.components.timeLine!.end)
+            // console.log(value.end < this.components.timeLine!.start)
+            
+            // console.log(this.components.timeLine?.range)
+            if (value.end < this.components.timeLine!.start || value.start > this.components.timeLine!.end){
+                // this item is not visible!
+                console.log(value)
+            }
+
+        })
+        return this.tableData;
     }
 }
