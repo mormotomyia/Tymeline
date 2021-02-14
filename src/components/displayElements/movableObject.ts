@@ -1,7 +1,7 @@
-import Component from "./Component";
-import {  ITableData } from "../interfaces/IObject";
-import { } from "../interfaces/ITableOptions";
-import { } from "./timeline/Timeline";
+import Component from "../base/Component";
+import {  ITableData } from "../../interfaces/IObject";
+import { } from "../../interfaces/ITableOptions";
+import { } from "../timeline/Timeline";
 import dayjs from "dayjs";
 import { type } from "node:os";
 

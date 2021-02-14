@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { DomItems } from "../components/DomItems";
+import { DomItems } from "../components/base/DomItems";
 
 export interface IDomItems{
     foreground : HTMLElement|null

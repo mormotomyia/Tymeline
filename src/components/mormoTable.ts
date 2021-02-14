@@ -1,17 +1,19 @@
 import { IBaseTableData, ITableData, ITableDataEntry } from "../interfaces/IObject";
 import { ITableOptions } from "../interfaces/ITableOptions";
-import { TableData } from "./movableObject";
+import { TableData } from "./displayElements/movableObject";
 import { Timeline, Transform } from "./timeline/Timeline";
-import Component from "./Component";
-import { DomItems } from "./DomItems";
+import Component from "./base/Component";
+import { DomItems } from "./base/DomItems";
+import { DataManager } from "./displayElements/DataManager";
 
 export class MormoTable extends Component{
    
     // body: HTMLElement;
     
     tableOptions: ITableOptions | undefined;
-    tableData: Map<string,TableData> = new Map();
+    
     timeline: Timeline;
+    dataManager: DataManager;
     // tableData: Array<{ id: number; length: number; text: string; }> = [];
     constructor(container:HTMLElement,options:ITableOptions){
 
@@ -26,15 +28,15 @@ export class MormoTable extends Component{
         this.createDom()
         // this.dom.
         // this.body = document.createElement(elementType)
-  
-
-
+        
+        
+        
         // propertyClasses
         this.timeline = new Timeline(this.dom,this.tableOptions.dates.start,this.tableOptions.dates?.end)
-        
+        this.dataManager = new DataManager();
         
         this.styleTimeline()
-
+        
         if (this.tableOptions){
             this.dom.dom.tableContainer.style.width = `${this.tableOptions.size.width}px`
             this.dom.dom.tableContainer.style.height = `${this.tableOptions.size.height}px`
@@ -47,14 +49,16 @@ export class MormoTable extends Component{
                 this.dom.dom.tableContainer.style.backgroundColor = `${this.tableOptions.colorschema.background}`
             }
         }
-
-
-
+        
+        
+        
         // this.dom.tableContainer.style.borderRadius= '10px';
         this.dom.dom.tableContainer.style.padding= '0px';
         this.dom.dom.tableContainer.style.margin= '0px';
     }
-
+    setTable = (argument:any) => this.dataManager.setTable(argument)
+    updateTable = (argument:any) => this.dataManager.updateTable(argument)
+    
     private createDom(){
         this.dom.dom.root = document.createElement('div')
         this.dom.dom.innerContainer = document.createElement('div')
@@ -132,72 +136,7 @@ export class MormoTable extends Component{
         // console.log(event.screenX)
     }
 
-    updateTable(objects:{[key:number]:IBaseTableData}): void
-    updateTable(objects:Array<ITableData>) : void
-
-    updateTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
-        if (Array.isArray(objects)){
-            objects.forEach((element) => {
-            // this.tableData.
-            if (element.length)
-            this.tableData.set(element.id.toString(),
-            new TableData(element.id,element.content,element.start,element.length)
-            )
-            if (element.end)
-            this.tableData.set(element.id.toString(),
-                    new TableData(element.id,element.content,element.start,element.end)
-                )
-            })
-        }   
-        else{
-            Object.entries(objects).forEach((e) => {
-                const element= e[1]
-                if (element.length)
-                this.tableData.set(e[0],
-                new TableData(e[0],element.content,element.start,element.length)
-                )
-                if (element.end)
-                this.tableData.set(e[0],
-                    new TableData(e[0],element.content,element.start,element.end))
-            })
-        }
-
-        console.log(this.tableData)
-    }
-
-    setTable(objects:{[key:number]:IBaseTableData}): void
-    setTable(objects:Array<ITableData>) : void
-
-    setTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
-        this.tableData.clear()
-        this.updateTable(objects)
-        // if (Array.isArray(objects)){
-        //     objects.forEach((element) => {
-        //         if (element.length)
-        //         this.tableData.set(element.id.toString(),
-        //             new TableData(element.id,element.content,element.start,element.length)
-        //         )
-        //         if (element.end)
-        //         this.tableData.set(element.id.toString(),
-        //             new TableData(element.id,element.content,element.start,element.end)
-        //         )
-        //     })
-        // }   
-        // else{
-        //     Object.entries(objects).forEach((e) => {
-        //         const element= e[1]
-        //         if (element.length)
-        //         this.tableData.set(e[0],
-        //             new TableData(e[0],element.content,element.start,element.length)
-        //         )
-        //         if (element.end)
-        //         this.tableData.set(e[0],
-        //             new TableData(e[0],element.content,element.start,element.end))
-        //     })
-        // }
-
-        // console.log(this.tableData)
-    }
+    
 
     render(){
         this.initialized = true;

@@ -1,4 +1,4 @@
-import { IDomItems } from "../interfaces/IObject"
+import { IDomItems } from "../../interfaces/IObject"
 
 export class DomItems implements IDomItems{
     foreground : HTMLElement|null
