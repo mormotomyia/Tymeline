@@ -1,6 +1,6 @@
 import moment from "moment";
 import TimeStep from "./TimeStep";
-import { IObject } from "../interfaces/IObject";
+import { IObject } from "../../interfaces/IObject";
 import dayjs, { Dayjs } from "dayjs";
 
 const MAX = 1000;
@@ -84,18 +84,39 @@ export class Timeline {
         
     }
 
+    centerOnToday(){
+
+        const now = dayjs()
+        
+       
+        const left = now.subtract(this.timeframe/(1000*2),'second') 
+        const right = now.add(this.timeframe/(1000*2),'second')
+        
+        // console.log(this.timeframe)
+        // console.log(now)
+        // // this.left = now.subtract(this.timeframe/(1000*2),'second') 
+        // // this.right = now.add(this.timeframe/(1000*2),'second')
+        // console.log(this.left)
+        // console.log(this.right)
+        this.updateScale('linear', left,right);
+        this.render()
+    }
+
     get timeframe(){
         return this.right.diff(this.left);
     }
 
 
 
+    updateScale(type:'absolute'): void
     updateScale(type:'stepsize'): void
     updateScale(type:'linear', a: number): void
     updateScale(type:'zoom', a: number,b: number): void
     updateScale(type:'linear', a: dayjs.Dayjs, b: dayjs.Dayjs): void
     updateScale(type:string, a?: dayjs.Dayjs | number, b?: dayjs.Dayjs|number): void {
         switch (type) {
+            case 'absolute':
+                break
             case 'linear':
                 if (a&&b){
                     this.left = <dayjs.Dayjs>a
@@ -112,17 +133,11 @@ export class Timeline {
 
                     const zoom = this.timeframe/(1000 * 10)
                     const factor =  <number>b/this.domElement.dom.timeContainer.getBoundingClientRect().width
-                    
                     a =a>0?1:-1
-                    console.log(a)
-                    // console.log(factor)
-                    // console.log(this.left)
                     this.left = this.left.add(-a*zoom*factor,'second') 
-                    // console.log(this.left)
+       
                     this.right = this.right.add(a*zoom*(1-factor),'second') 
-                    // console.log(factor)
-                    // console.log(a)
-                    // console.log(b)
+       
                 }
                 break;
             case 'stepsize':
@@ -130,7 +145,9 @@ export class Timeline {
             default:
                 break;
         }
-        console.log(this.timeframe)
+
+    
+        // console.log(this.timeframe)
         const minStep = this.timeframe / (this.domElement.dom.timeContainer.getBoundingClientRect().width / 80)
         // console.log(minStep/1000/3600)
         this.timestep.updateScale(this.left, this.right, minStep)
@@ -147,7 +164,7 @@ export class Timeline {
         // console.log(minStep/1000/3600)
         // this.timestep.updateScale(this.left,this.right,minStep)
         this.domElement.domItems.clearLegend()
-        console.log('___')
+        // console.log('___')
        
       
         while (this.timestep.hasNext()&& count < MAX){

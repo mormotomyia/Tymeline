@@ -1,13 +1,21 @@
 .mormo-time-element{
     border-width:5px;
-    text-align:center;
+    text-align:left;
     border-style: none;
     border-left-style: solid;
     border-color: black;
     position: absolute;
     box-sizing: border-box;
+    font-family: sans-serif;
     /* timeElement.style.borderWidth = 'none '
             timeElement.style.borderStyle = 'none'
             timeElement.style.borderLeftStyle = 'solid'
             timeElement.style.borderColor = 'Black' */
+}
+.mormo-timeline{
+    position: relative;
+    width: fit-content;
+}
+.mormo-inner-container{
+    position: relative;
 }

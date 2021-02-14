@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { DomItems } from "../components/DomItems";
 
 export interface IDomItems{
@@ -13,12 +14,21 @@ export interface IObject{
     dom:{[key: string]: HTMLElement};
 }
 export interface IBaseTableData{
-    length: number;
-    start: number;
+    start: dayjs.Dayjs;
+    end?: dayjs.Dayjs;
+    length?: number;
     content: { text: string; };
 }
-export interface ITableData extends IBaseTableData{
+export interface ITableDataEntry extends IBaseTableData{
     id: string | number;
+}
+
+
+export interface  ITableData{
+    start: dayjs.Dayjs;
+    end : dayjs.Dayjs;
+    id: string | number;
+    content: { text: string; };
 }
 
 

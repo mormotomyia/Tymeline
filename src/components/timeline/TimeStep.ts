@@ -227,10 +227,10 @@ export class TimeStep{
         if (stepYear*10 > minimumStep)          {this.scale = 'year';        this.step = 10;}
         if (stepYear*5 > minimumStep)           {this.scale = 'year';        this.step = 5;}
         if (stepYear > minimumStep)             {this.scale = 'year';        this.step = 1;}
-        if (stepMonth*3 > minimumStep)          {this.scale = 'month';       this.step = 3;}
-        // if (stepMonth > minimumStep)            {this.scale = 'month';       this.step = 1;}
+        if (stepMonth*2 > minimumStep)          {this.scale = 'month';       this.step = 3;}
+        if (stepMonth > minimumStep)            {this.scale = 'month';       this.step = 1;}
         // if (stepDay*7 > minimumStep && this.options.showWeekScale)            {this.scale = 'week';        this.step = 1;}
-        if (stepDay*45 > minimumStep)            {this.scale = 'day';         this.step = 4;}
+        if (stepDay*5 > minimumStep)            {this.scale = 'day';         this.step = 4;}
         if (stepDay*2 > minimumStep)            {this.scale = 'day';         this.step = 2;}
         if (stepDay > minimumStep)              {this.scale = 'day';         this.step = 1;}
         if (stepDay/2 > minimumStep)            {this.scale = 'weekday';     this.step = 1;}
@@ -250,6 +250,8 @@ export class TimeStep{
         if (stepMillisecond*10 > minimumStep)   {this.scale = 'millisecond'; this.step = 10;}
         if (stepMillisecond*5 > minimumStep)    {this.scale = 'millisecond'; this.step = 5;}
         if (stepMillisecond > minimumStep)      {this.scale = 'millisecond'; this.step = 1;}
+        // console.log(minimumStep/1000/3600)
+        // console.log(this.scale)
     }
 
   /**

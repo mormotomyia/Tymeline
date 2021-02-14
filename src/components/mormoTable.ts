@@ -1,7 +1,7 @@
-import { IBaseTableData, ITableData } from "../interfaces/IObject";
+import { IBaseTableData, ITableData, ITableDataEntry } from "../interfaces/IObject";
 import { ITableOptions } from "../interfaces/ITableOptions";
 import { TableData } from "./movableObject";
-import { Timeline, Transform } from "./Timeline";
+import { Timeline, Transform } from "./timeline/Timeline";
 import Component from "./Component";
 import { DomItems } from "./DomItems";
 
@@ -23,9 +23,39 @@ export class MormoTable extends Component{
         if (this.tableOptions?.dates===undefined){
             this.tableOptions.dates = {start: new Date(new Date().getTime()-(7*24*3600*1000)), end:new Date(new Date().getTime()+(7*24*3600*1000))};
         }
-
+        this.createDom()
         // this.dom.
         // this.body = document.createElement(elementType)
+  
+
+
+        // propertyClasses
+        this.timeline = new Timeline(this.dom,this.tableOptions.dates.start,this.tableOptions.dates?.end)
+        
+        
+        this.styleTimeline()
+
+        if (this.tableOptions){
+            this.dom.dom.tableContainer.style.width = `${this.tableOptions.size.width}px`
+            this.dom.dom.tableContainer.style.height = `${this.tableOptions.size.height}px`
+            this.dom.dom.root.classList.add('mormo-timeline')
+            this.dom.dom.innerContainer.classList.add('mormo-inner-container')
+            // this.dom.dom.root.style.width = `${this.tableOptions.size.width}px`
+            // this.dom.dom.root.style.height = `${this.tableOptions.size.height}px`
+            if(this.tableOptions.colorschema){
+                this.dom.dom.tableContainer.style.color = `${this.tableOptions.colorschema.text}`
+                this.dom.dom.tableContainer.style.backgroundColor = `${this.tableOptions.colorschema.background}`
+            }
+        }
+
+
+
+        // this.dom.tableContainer.style.borderRadius= '10px';
+        this.dom.dom.tableContainer.style.padding= '0px';
+        this.dom.dom.tableContainer.style.margin= '0px';
+    }
+
+    private createDom(){
         this.dom.dom.root = document.createElement('div')
         this.dom.dom.innerContainer = document.createElement('div')
         this.dom.dom.tableContainer = document.createElement('div')
@@ -49,38 +79,14 @@ export class MormoTable extends Component{
         this.dom.dom.root.onmousemove = this.drag.bind(this)
         this.dom.dom.root.oncontextmenu = (event:Event) => event.preventDefault();
         
-        // propertyClasses
-        this.timeline = new Timeline(this.dom,this.tableOptions.dates.start,this.tableOptions.dates?.end)
-        
-        
-        // console.log(this.timeline.left)
-        // console.log(this.timeline.right)
-
-
-        // this.dom.root.addEventListener('wheel',this.changeZoom)
-        this.styleTimeline()
-
-        if (this.tableOptions){
-
-            this.dom.dom.tableContainer.style.width = `${this.tableOptions.size.width}px`
-            this.dom.dom.tableContainer.style.height = `${this.tableOptions.size.height}px`
-            this.dom.dom.root.style.width = `${this.tableOptions.size.width}px`
-            this.dom.dom.root.style.height = `${this.tableOptions.size.height}px`
-            if(this.tableOptions.colorschema){
-                this.dom.dom.tableContainer.style.color = `${this.tableOptions.colorschema.text}`
-                this.dom.dom.tableContainer.style.backgroundColor = `${this.tableOptions.colorschema.background}`
-            }
-        }
-
-
-
-        // this.dom.tableContainer.style.borderRadius= '10px';
-        this.dom.dom.tableContainer.style.padding= '0px';
-        this.dom.dom.tableContainer.style.margin= '0px';
+        this.dom.dom.defaultButton = document.createElement('button')
+        this.dom.dom.defaultButton.innerHTML='center on Now'
+        this.dom.dom.defaultButton.onclick = () => this.timeline.centerOnToday()
+        this.dom.dom.root.appendChild(this.dom.dom.defaultButton)
     }
 
 
-    styleTimeline(){
+    private styleTimeline(){
         // this.root.style.margin="20px";
         
         this.root?this.root.style.paddingLeft= "20px":null
@@ -108,8 +114,8 @@ export class MormoTable extends Component{
     drag(event:MouseEvent){
         // console.log(event.buttons)
         if (event.buttons == 1){
-            console.log(this.timeline.timeframe)
-            console.log(event.movementX*this.timeline.timeframe*0.01)
+            // console.log(this.timeline.timeframe)
+            // console.log(event.movementX*this.timeline.timeframe*0.01)
             this.timeline.updateScale('linear',-event.movementX*this.timeline.timeframe/(1000*1000))
             this.timeline.render()
             // this.timeline.applyTransform(transform)
@@ -129,21 +135,30 @@ export class MormoTable extends Component{
     updateTable(objects:{[key:number]:IBaseTableData}): void
     updateTable(objects:Array<ITableData>) : void
 
-    updateTable(objects:{[key:number]:IBaseTableData} | Array<ITableData> ){
+    updateTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
         if (Array.isArray(objects)){
             objects.forEach((element) => {
             // this.tableData.
+            if (element.length)
             this.tableData.set(element.id.toString(),
-                new TableData(element.id,element.length,element.start,element.content)
+            new TableData(element.id,element.content,element.start,element.length)
             )
+            if (element.end)
+            this.tableData.set(element.id.toString(),
+                    new TableData(element.id,element.content,element.start,element.end)
+                )
             })
         }   
         else{
             Object.entries(objects).forEach((e) => {
                 const element= e[1]
+                if (element.length)
                 this.tableData.set(e[0],
-                new TableData(e[0],element.length,element.start,element.content)
+                new TableData(e[0],element.content,element.start,element.length)
                 )
+                if (element.end)
+                this.tableData.set(e[0],
+                    new TableData(e[0],element.content,element.start,element.end))
             })
         }
 
@@ -153,25 +168,35 @@ export class MormoTable extends Component{
     setTable(objects:{[key:number]:IBaseTableData}): void
     setTable(objects:Array<ITableData>) : void
 
-    setTable(objects:{[key:number]:IBaseTableData} | Array<ITableData> ){
+    setTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
         this.tableData.clear()
-        if (Array.isArray(objects)){
-            objects.forEach((element) => {
-            this.tableData.set(element.id.toString(),
-                new TableData(element.id,element.length,element.start,element.content)
-            )
-            })
-        }   
-        else{
-            Object.entries(objects).forEach((e) => {
-                const element= e[1]
-                this.tableData.set(e[0],
-                new TableData(e[0],element.length,element.start,element.content)
-                )
-            })
-        }
+        this.updateTable(objects)
+        // if (Array.isArray(objects)){
+        //     objects.forEach((element) => {
+        //         if (element.length)
+        //         this.tableData.set(element.id.toString(),
+        //             new TableData(element.id,element.content,element.start,element.length)
+        //         )
+        //         if (element.end)
+        //         this.tableData.set(element.id.toString(),
+        //             new TableData(element.id,element.content,element.start,element.end)
+        //         )
+        //     })
+        // }   
+        // else{
+        //     Object.entries(objects).forEach((e) => {
+        //         const element= e[1]
+        //         if (element.length)
+        //         this.tableData.set(e[0],
+        //             new TableData(e[0],element.content,element.start,element.length)
+        //         )
+        //         if (element.end)
+        //         this.tableData.set(e[0],
+        //             new TableData(e[0],element.content,element.start,element.end))
+        //     })
+        // }
 
-        console.log(this.tableData)
+        // console.log(this.tableData)
     }
 
     render(){
