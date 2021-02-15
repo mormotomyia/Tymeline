@@ -1,7 +1,7 @@
 
 import {  ITableData } from "../../interfaces/IObject";
 import { } from "../../interfaces/ITableOptions";
-import { } from "../timeline/Timeline";
+import { } from "../view/timeline/Timeline";
 import dayjs from "dayjs";
 import { type } from "node:os";
 
@@ -49,17 +49,6 @@ export class TableData implements ITableData {
     }
 }
 
-export class MovableObject{
-    constructor(){
-    }
-
-    destroy(){
-
-    }
-    redraw(){
-        
-    }
-}
 
 
 

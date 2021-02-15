@@ -1,7 +1,7 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../../interfaces/IObject"
-import { ComponentCollection } from "../base/ComponentCollection";
-import { Timeline } from "../timeline/Timeline";
-import { TableData } from "./movableObject"
+import { ComponentCollection } from "../model/ComponentCollection";
+import { Timeline } from "../view/timeline/Timeline";
+import { TableData } from "../model/TableData"
 
 export class DataManager{
     tableData: Map<string,TableData> = new Map();

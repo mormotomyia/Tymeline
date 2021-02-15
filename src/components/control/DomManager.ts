@@ -1,7 +1,7 @@
 import { IProps } from "../../interfaces/IObject";
 import { ITableOptions } from "../../interfaces/ITableOptions";
-import { ComponentCollection } from "../base/ComponentCollection";
-import { TimelineDomItems } from "../base/DomItems"
+import { ComponentCollection } from "../model/ComponentCollection";
+import { TimelineDomItems } from "../model/DomItems"
 
 export class DomManager{
     dom: IProps;

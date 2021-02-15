@@ -1,12 +1,12 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../interfaces/IObject";
 import { ITableOptions } from "../interfaces/ITableOptions";
-import { TableData } from "./displayElements/movableObject";
-import { Timeline, Transform } from "./timeline/Timeline";
+import { TableData } from "./model/TableData";
+import { Timeline, Transform } from "./view/timeline/Timeline";
 
-import { TimelineDomItems } from "./base/DomItems";
-import { DataManager } from "./displayElements/DataManager";
-import { DomManager } from "./displayElements/DomManager";
-import { ComponentCollection } from "./base/ComponentCollection";
+import { TimelineDomItems } from "./model/DomItems";
+import { DataManager } from "./control/DataManager";
+import { DomManager } from "./control/DomManager";
+import { ComponentCollection } from "./model/ComponentCollection";
 
 export class MormoTable{
    

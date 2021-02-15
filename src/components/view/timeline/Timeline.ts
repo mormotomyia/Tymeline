@@ -1,8 +1,8 @@
 
 import TimeStep from "./TimeStep";
-import { IProps } from "../../interfaces/IObject";
+import { IProps } from "../../../interfaces/IObject";
 import dayjs, { Dayjs } from "dayjs";
-import { ComponentCollection } from "../base/ComponentCollection";
+import { ComponentCollection } from "../../model/ComponentCollection";
 
 const MAX = 1000;
 const print = (...args:any) => console.log(args)
@@ -55,8 +55,8 @@ export enum ScaleOptions {
     minutes="getMinutes",
     seconds="getSeconds"
 }
-function daysInMonth (date:Date) {
 
+function daysInMonth (date:Date) {
     return new Date(date.getFullYear(), date.getMonth(), 0).getDate();
 }
 
@@ -68,7 +68,7 @@ export class Timeline {
     private topScale: ScaleOptions;
     private bottomScale: ScaleOptions;
     private timestep: TimeStep;
-    components: any;
+    components: ComponentCollection;
     constructor(dom:IProps,components:ComponentCollection,start:Date,end:Date){
         //stupid initializer!
         this.topScale = ScaleOptions.months
