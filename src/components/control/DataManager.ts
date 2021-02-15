@@ -1,6 +1,6 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../../interfaces/IObject"
 import { ComponentCollection } from "../model/ComponentCollection";
-import { Timeline } from "../view/timeline/Timeline";
+import { TimelineView } from "../view/timeline/Timeline";
 import { TableData } from "../model/TableData"
 
 export class DataManager{

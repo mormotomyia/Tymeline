@@ -3,6 +3,7 @@ import TimeStep from "./TimeStep";
 import { IProps } from "../../../interfaces/IObject";
 import dayjs, { Dayjs } from "dayjs";
 import { ComponentCollection } from "../../model/ComponentCollection";
+import { TimelineModel } from "../../model/timelineModel";
 
 const MAX = 1000;
 const print = (...args:any) => console.log(args)
@@ -60,145 +61,43 @@ function daysInMonth (date:Date) {
     return new Date(date.getFullYear(), date.getMonth(), 0).getDate();
 }
 
-export class Timeline {
-    private left: dayjs.Dayjs;
-    private right: dayjs.Dayjs;
-    domElement: IProps;
-
-    private topScale: ScaleOptions;
-    private bottomScale: ScaleOptions;
-    private timestep: TimeStep;
-    components: ComponentCollection;
-    constructor(dom:IProps,components:ComponentCollection,start:Date,end:Date){
-        //stupid initializer!
-        this.topScale = ScaleOptions.months
-        this.bottomScale = ScaleOptions.weeks
-        this.components = components
-       
-        this.left = dayjs(start);
-        this.right = dayjs(end);
-        this.domElement = dom;
-        
-
-        this.timestep = new TimeStep(this.left,this.right,1000*3600*24)
-        console.log(this.timestep.scale)
-        console.log(this.timestep.step)
-        console.log(this.timestep.isMajor())
-        
-    }
-
-    get start():dayjs.Dayjs{
-        return this.left;
-    }
-
-    get end():dayjs.Dayjs{
-        return this.right
-    }
-
-    get range():{start:dayjs.Dayjs,end:dayjs.Dayjs}{
-        return {start:this.start,end:this.end}
-    }
-
-    centerOnToday(){
-
-        const now = dayjs()
-        
-       
-        const left = now.subtract(this.timeframe/(1000*2),'second') 
-        const right = now.add(this.timeframe/(1000*2),'second')
-        
-        // console.log(this.timeframe)
-        // console.log(now)
-        // // this.left = now.subtract(this.timeframe/(1000*2),'second') 
-        // // this.right = now.add(this.timeframe/(1000*2),'second')
-        // console.log(this.left)
-        // console.log(this.right)
-        this.updateScale('linear', left,right);
-        this.render()
-    }
-
-    get timeframe(){
-        return this.right.diff(this.left);
-    }
-
-
-
-    updateScale(type:'absolute'): void
-    updateScale(type:'stepsize'): void
-    updateScale(type:'linear', a: number): void
-    updateScale(type:'zoom', a: number,b: number): void
-    updateScale(type:'linear', a: dayjs.Dayjs, b: dayjs.Dayjs): void
-    updateScale(type:string, a?: dayjs.Dayjs | number, b?: dayjs.Dayjs|number): void {
-        switch (type) {
-            case 'absolute':
-                break
-            case 'linear':
-                if (a&&b){
-                    this.left = <dayjs.Dayjs>a
-                    this.right =  <dayjs.Dayjs>b
-                } else if (a){
-                    this.left = this.left.add( <number>a, 'second')
-                    this.right = this.right.add( <number>a, 'second')
-                }
-                break;
-            case 'zoom':
-                // zoom in = negative!
-                console.log(this.domElement.dom.timeContainer.getBoundingClientRect().width)
-                if (a !== undefined && b!== undefined){
-
-                    const zoom = this.timeframe/(1000 * 10)
-                    const factor =  <number>b/this.domElement.dom.timeContainer.getBoundingClientRect().width
-                    a =a>0?1:-1
-                    this.left = this.left.add(-a*zoom*factor,'second') 
-       
-                    this.right = this.right.add(a*zoom*(1-factor),'second') 
-       
-                }
-                break;
-            case 'stepsize':
-                break
-            default:
-                break;
-        }
-
+export class TimelineView {
+    timelineModel: TimelineModel;
     
-        // console.log(this.timeframe)
-        const minStep = this.timeframe / (this.domElement.dom.timeContainer.getBoundingClientRect().width / 80)
-        // console.log(minStep/1000/3600)
-        this.timestep.updateScale(this.left, this.right, minStep)
-        
+    constructor(timelineModel:TimelineModel){
+        this.timelineModel = timelineModel
     }
+
 
 
     render(): void{
-     
-
+    
         let count = 0;
-        this.timestep.start();
+        this.timelineModel.step.start();
         // const minStep = this.right.diff(this.left)/(this.domElement.dom.timeContainer.getBoundingClientRect().width/40)
         // console.log(minStep/1000/3600)
         // this.timestep.updateScale(this.left,this.right,minStep)
-        this.domElement.domItems.clearLegend()
+        this.timelineModel.domElement.domItems.clearLegend()
         // console.log('___')
        
       
-        while (this.timestep.hasNext()&& count < MAX){
-            this.timestep.next()
-            const isMajor = this.timestep.isMajor()
-            const className = this.timestep.getClassName();
-            let current = this.timestep.getCurrent()
+        while (this.timelineModel.step.hasNext()&& count < MAX){
+            this.timelineModel.step.next()
+            const isMajor = this.timelineModel.step.isMajor()
+            const className = this.timelineModel.step.getClassName();
+            let current = this.timelineModel.step.getCurrent()
             // console.log(className)
-            this.reuseDomComponent(isMajor,className,current,this.timestep.getLabel(current,isMajor))
+            this.reuseDomComponent(isMajor,className,current,this.timelineModel.step.getLabel(current,isMajor))
         }
         
-        this.domElement.domItems.redundantLegendMajor.forEach(element => {
+        this.timelineModel.domElement.domItems.redundantLegendMajor.forEach(element => {
             element.parentNode?.removeChild(element)
         });
-        this.domElement.domItems.redundantLegendMinor.forEach(element => {
+        this.timelineModel.domElement.domItems.redundantLegendMinor.forEach(element => {
             element.parentNode?.removeChild(element)
         });
-        this.domElement.domItems.redundantLegendMajor = []
-        this.domElement.domItems.redundantLegendMajor = []
+        this.timelineModel.domElement.domItems.redundantLegendMajor = []
+        this.timelineModel.domElement.domItems.redundantLegendMajor = []
         
         
 
@@ -210,16 +109,16 @@ export class Timeline {
     private reuseDomComponent(isMajor:boolean, classname:string,current: dayjs.Dayjs, content:string) {
         let reusedComponent
         if (isMajor){
-            reusedComponent = this.domElement.domItems.redundantLegendMajor.shift();
+            reusedComponent = this.timelineModel.domElement.domItems.redundantLegendMajor.shift();
         } else {
-            reusedComponent = this.domElement.domItems.redundantLegendMinor.shift();
+            reusedComponent = this.timelineModel.domElement.domItems.redundantLegendMinor.shift();
         }
 
         if (!reusedComponent){
             const content =document.createElement('div');
             reusedComponent = document.createElement('div');
             reusedComponent.appendChild(content);
-            this.domElement.dom.timeContainer.appendChild(reusedComponent) 
+            this.timelineModel.domElement.dom.timeContainer.appendChild(reusedComponent) 
         }
 
         // TODO this needs some more handling, there could be some scripts in here
@@ -230,10 +129,10 @@ export class Timeline {
         const offset = this.setOffset(current) //fuck!
         reusedComponent.style.transform = `translate(${offset}px)`
         if(isMajor){
-            this.domElement.domItems.legendMajor.push(reusedComponent);
+            this.timelineModel.domElement.domItems.legendMajor.push(reusedComponent);
         }
         else{
-            this.domElement.domItems.legendMinor.push(reusedComponent);
+            this.timelineModel.domElement.domItems.legendMinor.push(reusedComponent);
         }
 
         return reusedComponent;
@@ -246,7 +145,7 @@ export class Timeline {
         // console.log(this.right.diff(this.left)) // span
         // console.log(current.diff(this.left))
         
-        return this.domElement.dom.timeContainer.getBoundingClientRect().width*(current.diff(this.left)/this.timeframe)
+        return this.timelineModel.domElement.dom.timeContainer.getBoundingClientRect().width*(current.diff(this.timelineModel.start)/this.timelineModel.timeframe)
         // console.log(offset)
 
         // console.log(this.domElement.dom.timeContainer.getBoundingClientRect())

@@ -1,19 +1,20 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../interfaces/IObject";
 import { ITableOptions } from "../interfaces/ITableOptions";
 import { TableData } from "./model/TableData";
-import { Timeline, Transform } from "./view/timeline/Timeline";
+import { TimelineView, Transform } from "./view/timeline/Timeline";
 
 import { TimelineDomItems } from "./model/DomItems";
 import { DataManager } from "./control/DataManager";
 import { DomManager } from "./control/DomManager";
 import { ComponentCollection } from "./model/ComponentCollection";
+import { TimelineModel } from "./model/timelineModel";
 
 export class MormoTable{
    
     
     tableOptions: ITableOptions;
     
-    timeline: Timeline;
+    timeline: TimelineModel;
     dataManager: DataManager;
     domManager: DomManager;
     props: IProps;
@@ -33,7 +34,7 @@ export class MormoTable{
             this.tableOptions.dates = {start: new Date(new Date().getTime()-(7*24*3600*1000)), end:new Date(new Date().getTime()+(7*24*3600*1000))};
         }
         this.domManager = new DomManager(this.props,this.componentCollection,this.tableOptions);
-        this.timeline = new Timeline(this.props,this.componentCollection,this.tableOptions.dates.start,this.tableOptions.dates?.end)
+        this.timeline = new TimelineModel(this.props,this.componentCollection,this.tableOptions.dates.start,this.tableOptions.dates?.end)
         this.dataManager = new DataManager(this.props, this.componentCollection);
         
         this.componentCollection.dataManager = this.dataManager
@@ -47,7 +48,7 @@ export class MormoTable{
         this.props.dom.root.onmousedown = this.drag.bind(this)
         this.props.dom.root.onmousemove = this.drag.bind(this)
         this.props.dom.root.oncontextmenu = (event:Event) => event.preventDefault();
-        this.props.dom.defaultButton.onclick = () => this.timeline.centerOnToday()
+        this.props.dom.defaultButton.onclick = () => this.timeline.timelineControl.centerOnToday()
         
         this.props.dom.tableContainer.style.padding= '0px';
         this.props.dom.tableContainer.style.margin= '0px';
@@ -57,14 +58,14 @@ export class MormoTable{
 
     drag(event:MouseEvent){
         if (event.buttons == 1){
-            this.timeline.updateScale('linear',-event.movementX*this.timeline.timeframe/(1000*1000))
+            this.timeline.timelineControl.updateScale('linear',-event.movementX*this.timeline.timeframe/(1000*1000))
             this.render()  
         }
     }
 
     changeZoom(event:WheelEvent){
         event.preventDefault();
-        this.timeline.updateScale('zoom',event.deltaY,event.offsetX)
+        this.timeline.timelineControl.updateScale('zoom',event.deltaY,event.offsetX)
         this.render()
     }
 
@@ -72,13 +73,13 @@ export class MormoTable{
     start(){
         this.initialized = true;
         this.root?.appendChild(this.props.dom.root)
-        this.timeline.updateScale('stepsize');
+        this.timeline.timelineControl.updateScale('stepsize');
         this.render()
     }
 
     render(){
        
-        this.timeline.render();
+        this.timeline.timelineView.render();
         this.dataManager.render();
     }
 
@@ -89,7 +90,7 @@ export class MormoTable{
 
     redraw(){
         if(this.initialized){
-            this.timeline.render();
+            this.timeline.timelineView.render();
             // do something
         }
 

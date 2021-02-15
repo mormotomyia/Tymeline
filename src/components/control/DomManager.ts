@@ -34,7 +34,7 @@ export class DomManager{
         this.dom.dom.innerContainer.appendChild(this.dom.dom.tableContainer)
 
         this.dom.dom.root.appendChild(this.dom.dom.innerContainer)
-        this.dom.dom.root.style.backgroundColor = 'red'
+        this.dom.dom.root.style.backgroundColor = 'yellow'
         
 
         
