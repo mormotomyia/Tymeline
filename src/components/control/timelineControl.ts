@@ -5,7 +5,7 @@ import { TimelineView } from "../view/timeline/Timeline"
 export class TimelineControl{
 
 
-    timelineView: TimelineView
+    timelineView: TimelineView;
     timelineModel : TimelineModel;
 
     constructor(timelineView:TimelineView,timelineModel:TimelineModel){

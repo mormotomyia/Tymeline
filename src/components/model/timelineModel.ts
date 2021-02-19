@@ -11,14 +11,12 @@ export class TimelineModel{
     domElement: IProps;
     private timestep: TimeStep;
     private components: ComponentCollection;
-    timelineView: TimelineView;
-    timelineControl: TimelineControl;
+
     
     // TODO make this extensible with baseclasses for TimelineView and TimelineControl!
     // the user should be able to intercept the creation of the default classes and substitute their own classes. 
     constructor(dom:IProps,components:ComponentCollection,start:Date,end:Date){
-        this.timelineView = new TimelineView(this);
-        this.timelineControl = new TimelineControl(this.timelineView, this);
+        
 
 
         //stupid initializer!
