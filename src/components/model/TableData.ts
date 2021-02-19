@@ -18,10 +18,26 @@ export class TableData implements ITableData {
     end:dayjs.Dayjs
     content: { text: string; };
 
-    
-    constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number)
-    constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,end:number|string|dayjs.Dayjs)
-    constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,end?:number|string|dayjs.Dayjs,length?:number,){
+    static fromLength(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number):TableData{
+        if (typeof(start)==='number'){
+            start = dayjs(start)
+        } else if (typeof(start)==='string'){
+            start = dayjs(start)
+        } else {
+            start = start
+        }
+        const end = start.add(length,'second')
+        return new TableData(id,content,start,end)
+
+
+    } 
+
+
+
+
+    // constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number)
+    constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,end:number|string|dayjs.Dayjs){
+
         if (typeof(start)==='number'){
             this.start = dayjs(start)
         } else if (typeof(start)==='string'){
@@ -29,20 +45,18 @@ export class TableData implements ITableData {
         } else {
             this.start = start
         }
+
+        console.log(length,end)
         
-        if (length){
-            this.end = this.start.add(length/1000,'second')
-        } else if(end){
-            if (typeof(end)==='number'){
-                this.end = dayjs(end)
-            } else if (typeof(end)==='string'){
-                this.end = dayjs(end)
-            } else {
-                this.end = end
-            } 
-        }else{
-            this.end = this.start
-        }
+       
+        if (typeof(end)==='number'){
+            this.end = dayjs(end)
+        } else if (typeof(end)==='string'){
+            this.end = dayjs(end)
+        } else {
+            this.end = end
+        } 
+        
 
         this.id = id;
         this.content = content;

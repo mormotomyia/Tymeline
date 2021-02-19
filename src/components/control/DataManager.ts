@@ -1,15 +1,17 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../../interfaces/IObject"
-import { ComponentCollection } from "../model/ComponentCollection";
-import { TimelineView } from "../view/timeline/TimelineView";
 import { TableData } from "../model/TableData"
 import dayjs from "dayjs";
+import { MormoDataView } from "../view/dataview/dataView";
 
 export class DataManager{
     tableData: Map<string,TableData> = new Map();
+    dataView: MormoDataView;
     
 
 
-    constructor(){}
+    constructor(dataview:MormoDataView){
+        this.dataView = dataview;
+    }
 
 
     updateTable(objects:{[key:number]:IBaseTableData}): void
@@ -17,16 +19,15 @@ export class DataManager{
 
     updateTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
         console.log(objects)
-        this.getVisibleElements()
         if (Array.isArray(objects)){
             objects.forEach((element) => {
             if (element.length)
             this.tableData.set(element.id.toString(),
-            new TableData(element.id,element.content,element.start,element.length)
+                TableData.fromLength(element.id,element.content,element.start,element.length)
             )
             if (element.end)
             this.tableData.set(element.id.toString(),
-                    new TableData(element.id,element.content,element.start,element.end)
+                new TableData(element.id,element.content,element.start,element.end)
                 )
             })
         }   
@@ -35,7 +36,7 @@ export class DataManager{
                 const element= e[1]
                 if (element.length)
                 this.tableData.set(e[0],
-                new TableData(e[0],element.content,element.start,element.length)
+                TableData.fromLength(e[0],element.content,element.start,element.length)
                 )
                 if (element.end)
                 this.tableData.set(e[0],
@@ -56,10 +57,14 @@ export class DataManager{
 
 
     render(start:dayjs.Dayjs,end:dayjs.Dayjs):void{
-        this.getVisibleElements(start,end)
+        const elements = this.getVisibleElements(start,end)
+        this.dataView.render(elements);
     }
 
-    private getVisibleElements(start:dayjs.Dayjs,end:dayjs.Dayjs):Map<string,TableData>{
+    private getVisibleElements(start:dayjs.Dayjs,end:dayjs.Dayjs):Array<TableData>{
+        console.log(start.format(),end.format())
+
+        const visibleData:Array<TableData> = []
         this.tableData.forEach((value,key,map) => {
             // console.log(value)
             // console.log(this.components.timeLine!.start)
@@ -67,12 +72,18 @@ export class DataManager{
             // console.log(value.end < this.components.timeLine!.start)
             
             // console.log(this.components.timeLine?.range)
+
+            console.log(value.start.format())
+            console.log(value.end.format())
             if (value.end < start || value.start > end){
-                // this item is not visible!
-                // console.log(value)
+                
+            }
+            else{
+                visibleData.push(value)
+                
             }
 
         })
-        return this.tableData;
+        return visibleData;
     }
 }

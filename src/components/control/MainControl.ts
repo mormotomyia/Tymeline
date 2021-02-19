@@ -13,21 +13,19 @@ export class MainControl{
 
 
 
-    constructor(root:HTMLElement,datamanager: DataManager, options:any){
+    constructor(root:HTMLElement, options:Object){
         
-
+        
         this.mainView =  new MainView(root,options);
+        const timelineOptions = { ...options,start:dayjs().subtract(7,"day"), end:dayjs().add(7,"day")}
+        const timelineView = new TimelineView(this.mainView.timeContainer);
 
-        const timelineOptions = {start:dayjs().subtract(7,"day"), end:dayjs().add(7,"day")}
-        const timelineView = new TimelineView(this.mainView.timeContainer,timelineOptions);
-        
-        
         this.timeline = new TimelineControl(timelineView,timelineOptions)
         
         
         const dataOptions = {}
         const dataView = new MormoDataView(this.mainView.tableContainer);
-        this.datacontrol = datamanager
+        this.datacontrol = new DataManager(dataView)
   
         this.addEvents()
     }
@@ -58,8 +56,8 @@ export class MainControl{
     }
 
     render(){
-        this.mainView.render();
         this.datacontrol.render(this.timeline.start,this.timeline.end);
+        this.mainView.render();
         this.timeline.render();
     }
 

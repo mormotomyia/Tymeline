@@ -16,29 +16,19 @@ export class MainView{
         this.tableContainer = document.createElement('div');
         this.timeContainer = document.createElement('div');
         this.timeContainer.classList.add('mormo-time');
-       
         this.style(tableOptions);
 
         // addEventListener(this.rootElement,'ondrag',console.log)
         // this.rootElement.atta
         // this.rootElement.attachEvent('ondrag',console.log)
         this.rootElement.addEventListener('click',()=>console.log('abbbb'))
+        this.rootElement.appendChild(this.tableContainer);
+        this.rootElement.appendChild(this.timeContainer);
     }
 
     private style(tableOptions?:any){
 
-        if (tableOptions){
-                    this.rootElement.style.width = `${tableOptions.size.width}px`
-                    this.rootElement.style.height = `${tableOptions.size.height}px`
-                    
-                    // this.innerContainer.classList.add('mormo-inner-container')
-                    // this.dom.dom.root.style.width = `${this.tableOptions.size.width}px`
-                    // this.dom.dom.root.style.height = `${this.tableOptions.size.height}px`
-                    if(tableOptions.colorschema){
-                        this.rootElement.style.color = `${tableOptions.colorschema.text}`
-                        this.rootElement.style.backgroundColor = `${tableOptions.colorschema.background}`
-                    }
-                }
+        
         this.rootElement.classList.add('mormo-timeline')
         this.timeContainer.style.position="absolute";
         this.timeContainer.style.bottom="0";
@@ -51,12 +41,27 @@ export class MainView{
         this.timeContainer.style.borderWidth="thin"
         this.timeContainer.style.borderTopWidth="thick"
         this.timeContainer.style.overflow='hidden'
-        // this.dom.timeContainer.style.display="inline-flex"
+
+
+
+        if (tableOptions){
+            this.rootElement.style.width = `${tableOptions.size.width}px`
+            this.rootElement.style.height = `${tableOptions.size.height}px`
+            this.tableContainer.style.height=`${tableOptions.size.height-50}px`
+            this.tableContainer.style.width=`${tableOptions.size.width}px`
+         
+            if(tableOptions.colorschema){
+                this.rootElement.style.color = `${tableOptions.colorschema.text}`
+                this.rootElement.style.backgroundColor = `${tableOptions.colorschema.background}`
+                this.timeContainer.style.borderColor=`${tableOptions.colorschema.borders}`;
+            }
+        }
+        
     }
 
     render(){
-        this.rootElement.appendChild(this.tableContainer);
-        this.rootElement.appendChild(this.timeContainer);
+        // this doesnt do anything.
+        // this component is just scaffolding to hold the child views
     }
 
 }

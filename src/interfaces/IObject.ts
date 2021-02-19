@@ -2,7 +2,6 @@ import dayjs from "dayjs";
 import { TimelineDomItems } from "../components/model/DomItems";
 
 export interface IDomItems{
-    foreground : HTMLElement|null
     legendMajor: Array<HTMLElement>
     legendMinor: Array<HTMLElement>
     redundantLegendMajor: Array<HTMLElement>

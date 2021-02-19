@@ -70,7 +70,7 @@ export class TimelineView {
 
 
    
-    constructor(timeContainer:HTMLDivElement, options:any){
+    constructor(timeContainer:HTMLDivElement){
         this.timestep = new TimeStep(dayjs().subtract(7,'day'),dayjs().add(7,'day'),1000*3600*24)
         this.timeContainer =timeContainer;
 
