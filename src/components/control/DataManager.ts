@@ -1,19 +1,15 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../../interfaces/IObject"
 import { ComponentCollection } from "../model/ComponentCollection";
-import { TimelineView } from "../view/timeline/Timeline";
+import { TimelineView } from "../view/timeline/TimelineView";
 import { TableData } from "../model/TableData"
+import dayjs from "dayjs";
 
 export class DataManager{
     tableData: Map<string,TableData> = new Map();
-    props: IProps;
-    components : ComponentCollection
+    
 
 
-    constructor(props:IProps,components:ComponentCollection){
-        this.components = components
-        this.props = props
-        this.props.dom.root.appendChild(document.createElement('h3'))
-    }
+    constructor(){}
 
 
     updateTable(objects:{[key:number]:IBaseTableData}): void
@@ -59,11 +55,11 @@ export class DataManager{
     }
 
 
-    render():void{
-        this.getVisibleElements()
+    render(start:dayjs.Dayjs,end:dayjs.Dayjs):void{
+        this.getVisibleElements(start,end)
     }
 
-    private getVisibleElements():Map<string,TableData>{
+    private getVisibleElements(start:dayjs.Dayjs,end:dayjs.Dayjs):Map<string,TableData>{
         this.tableData.forEach((value,key,map) => {
             // console.log(value)
             // console.log(this.components.timeLine!.start)
@@ -71,9 +67,9 @@ export class DataManager{
             // console.log(value.end < this.components.timeLine!.start)
             
             // console.log(this.components.timeLine?.range)
-            if (value.end < this.components.timeLine!.start || value.start > this.components.timeLine!.end){
+            if (value.end < start || value.start > end){
                 // this item is not visible!
-                console.log(value)
+                // console.log(value)
             }
 
         })

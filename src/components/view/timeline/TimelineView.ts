@@ -3,7 +3,7 @@ import TimeStep from "./TimeStep";
 import { IProps } from "../../../interfaces/IObject";
 import dayjs, { Dayjs } from "dayjs";
 import { ComponentCollection } from "../../model/ComponentCollection";
-import { TimelineModel } from "../../model/timelineModel";
+import { TimelineDomItems } from "../../model/DomItems";
 
 const MAX = 1000;
 const print = (...args:any) => console.log(args)
@@ -62,42 +62,58 @@ function daysInMonth (date:Date) {
 }
 
 export class TimelineView {
-    timelineModel: TimelineModel;
-    
-    constructor(timelineModel:TimelineModel){
-        this.timelineModel = timelineModel
+    // timelineModel: TimelineModel;
+    timestep:TimeStep
+    // rootElement:HTMLElement;
+    timeContainer: HTMLDivElement;
+    domItems: TimelineDomItems;
+
+
+   
+    constructor(timeContainer:HTMLDivElement, options:any){
+        this.timestep = new TimeStep(dayjs().subtract(7,'day'),dayjs().add(7,'day'),1000*3600*24)
+        this.timeContainer =timeContainer;
+
+        this.domItems = new TimelineDomItems()
+
     }
 
 
+    updateScale(start:dayjs.Dayjs,end:dayjs.Dayjs){
+                // console.log(this.timeframe)
+                const minStep = end.diff(start) / (this.timeContainer.getBoundingClientRect().width / 80)
+                // console.log(minStep/1000/3600)
+                this.timestep.updateScale(start,end, minStep)
+    }
 
-    render(): void{
+
+    render(start:dayjs.Dayjs,end:dayjs.Dayjs): void{
     
         let count = 0;
-        this.timelineModel.step.start();
-        // const minStep = this.right.diff(this.left)/(this.domElement.dom.timeContainer.getBoundingClientRect().width/40)
-        // console.log(minStep/1000/3600)
-        // this.timestep.updateScale(this.left,this.right,minStep)
-        this.timelineModel.domElement.domItems.clearLegend()
-        // console.log('___')
+        this.timestep.start();
+     
+        this.updateScale(start,end)
+        this.domItems.clearLegend()
+        console.log('___')
        
       
-        while (this.timelineModel.step.hasNext()&& count < MAX){
-            this.timelineModel.step.next()
-            const isMajor = this.timelineModel.step.isMajor()
-            const className = this.timelineModel.step.getClassName();
-            let current = this.timelineModel.step.getCurrent()
+        while (this.timestep.hasNext()&& count < MAX){
+            this.timestep.next()
+            const isMajor = this.timestep.isMajor()
+            const className = this.timestep.getClassName();
+            let current = this.timestep.getCurrent()
             // console.log(className)
-            this.reuseDomComponent(isMajor,className,current,this.timelineModel.step.getLabel(current,isMajor))
+            this.reuseDomComponent(isMajor,className,current,this.timestep.getLabel(current,isMajor),start,end)
         }
         
-        this.timelineModel.domElement.domItems.redundantLegendMajor.forEach(element => {
+        this.domItems.redundantLegendMajor.forEach(element => {
             element.parentNode?.removeChild(element)
         });
-        this.timelineModel.domElement.domItems.redundantLegendMinor.forEach(element => {
+        this.domItems.redundantLegendMinor.forEach(element => {
             element.parentNode?.removeChild(element)
         });
-        this.timelineModel.domElement.domItems.redundantLegendMajor = []
-        this.timelineModel.domElement.domItems.redundantLegendMajor = []
+        this.domItems.redundantLegendMajor = []
+        this.domItems.redundantLegendMajor = []
         
         
 
@@ -106,19 +122,19 @@ export class TimelineView {
     }
 
 
-    private reuseDomComponent(isMajor:boolean, classname:string,current: dayjs.Dayjs, content:string) {
+    private reuseDomComponent(isMajor:boolean, classname:string,current: dayjs.Dayjs, content:string, start:dayjs.Dayjs,end:dayjs.Dayjs) {
         let reusedComponent
         if (isMajor){
-            reusedComponent = this.timelineModel.domElement.domItems.redundantLegendMajor.shift();
+            reusedComponent = this.domItems.redundantLegendMajor.shift();
         } else {
-            reusedComponent = this.timelineModel.domElement.domItems.redundantLegendMinor.shift();
+            reusedComponent = this.domItems.redundantLegendMinor.shift();
         }
 
         if (!reusedComponent){
             const content =document.createElement('div');
             reusedComponent = document.createElement('div');
             reusedComponent.appendChild(content);
-            this.timelineModel.domElement.dom.timeContainer.appendChild(reusedComponent) 
+            this.timeContainer.appendChild(reusedComponent) 
         }
 
         // TODO this needs some more handling, there could be some scripts in here
@@ -126,30 +142,21 @@ export class TimelineView {
         reusedComponent.className = `${classname}`
         reusedComponent.classList.add(`${isMajor?'mormo-time-label':'mormo-time-label'}`)
         reusedComponent.classList.add("mormo-time-element")
-        const offset = this.setOffset(current) //fuck!
+        const offset = this.setOffset(current,start,end) //fuck!
         reusedComponent.style.transform = `translate(${offset}px)`
         if(isMajor){
-            this.timelineModel.domElement.domItems.legendMajor.push(reusedComponent);
+            this.domItems.legendMajor.push(reusedComponent);
         }
         else{
-            this.timelineModel.domElement.domItems.legendMinor.push(reusedComponent);
+            this.domItems.legendMinor.push(reusedComponent);
         }
 
         return reusedComponent;
     }
 
-    private setOffset(current:dayjs.Dayjs){
-        // console.log(current)
-        // console.log(this.left)
-        // console.log(this.right)
-        // console.log(this.right.diff(this.left)) // span
-        // console.log(current.diff(this.left))
-        
-        return this.timelineModel.domElement.dom.timeContainer.getBoundingClientRect().width*(current.diff(this.timelineModel.start)/this.timelineModel.timeframe)
-        // console.log(offset)
-
-        // console.log(this.domElement.dom.timeContainer.getBoundingClientRect())
-        // console.log('')
+    private setOffset(current:dayjs.Dayjs, start:dayjs.Dayjs, end:dayjs.Dayjs){
+       
+        return this.timeContainer.getBoundingClientRect().width*(current.diff(start)/end.diff(start))
 
 
     }

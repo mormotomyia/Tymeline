@@ -1,7 +1,7 @@
 
 import {  ITableData } from "../../interfaces/IObject";
 import { } from "../../interfaces/ITableOptions";
-import { } from "../view/timeline/Timeline";
+import { } from "../view/timeline/TimelineView";
 import dayjs from "dayjs";
 import { type } from "node:os";
 
