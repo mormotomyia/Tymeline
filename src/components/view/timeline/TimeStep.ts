@@ -5,8 +5,6 @@
  */
 
 import dayjs from "dayjs";
-import  moment  from "moment";
-import { exit } from "node:process";
 var weekOfYear = require('dayjs/plugin/weekOfYear')
 dayjs.extend(weekOfYear)
 
@@ -141,7 +139,7 @@ export class TimeStep{
             case 'hour':         if(this.current.hour() > 0 && this.current.hour() < this.step) this.current =this.current.hour(0);  break;
             case 'weekday':      // intentional fall through
             case 'day':          if(this.current.date() < this.step+1) this.current = this.current.date(1); break;
-            case 'week':         if(this.current.week() < this.step) this.current = this.current.week(1); break; // week numbering starts at 1, not 0
+            // case 'week':         if(this.current.week() < this.step) this.current = this.current.week(1); break; // week numbering starts at 1, not 0
             case 'month':        if(this.current.month() < this.step) this.current = this.current.month(0);  break;
             case 'year':         break; // nothing to do for year
             default:             break;
@@ -194,7 +192,7 @@ export class TimeStep{
             case 'hour':         this.current =this.current.subtract(this.current.hour() % this.step, 'hours'); break;
             case 'weekday':      // intentional fall through
             case 'day':          this.current =this.current.subtract((this.current.date() - 1) % this.step, 'day'); break;
-            case 'week':         this.current =this.current.subtract(this.current.week() % this.step, 'week'); break;
+            // case 'week':         this.current =this.current.subtract(this.current.week() % this.step, 'week'); break;
             case 'month':        this.current =this.current.subtract(this.current.month() % this.step, 'month');  break;
             case 'year':         this.current =this.current.subtract(this.current.year() % this.step, 'year'); break;
             default: break;
@@ -472,11 +470,11 @@ export class TimeStep{
         classNames.push(this.step <= 2 ? `mormo-${current.format('dddd').toLowerCase()}` : '');
         classNames.push(even(current.date() - 1));
         break;
-      case 'week':
-        classNames.push(`mormo-week${current.format('w')}`);
-        classNames.push(currentWeek(current));
-        classNames.push(even(current.week()));
-        break;
+      // case 'week':
+      //   classNames.push(`mormo-week${current.format('w')}`);
+      //   classNames.push(currentWeek(current));
+      //   classNames.push(even(current.week()));
+      //   break;
       case 'month':
         classNames.push(`mormo-${current.format('MMMM').toLowerCase()}`);
         classNames.push(currentMonth(current));

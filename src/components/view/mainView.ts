@@ -21,7 +21,7 @@ export class MainView{
         // addEventListener(this.rootElement,'ondrag',console.log)
         // this.rootElement.atta
         // this.rootElement.attachEvent('ondrag',console.log)
-        this.rootElement.addEventListener('click',()=>console.log('abbbb'))
+        // this.rootElement.addEventListener('click',()=>console.log('abbbb'))
         this.rootElement.appendChild(this.tableContainer);
         this.rootElement.appendChild(this.timeContainer);
     }
@@ -30,6 +30,12 @@ export class MainView{
 
         
         this.rootElement.classList.add('mormo-timeline')
+        this.tableContainer.style.overflowY = 'auto'
+        this.tableContainer.style.overflowX = 'hidden'
+
+
+
+
         this.timeContainer.style.position="absolute";
         this.timeContainer.style.bottom="0";
         this.timeContainer.style.left="0";

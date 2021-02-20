@@ -16,7 +16,7 @@ export class TimelineControl{
 
 
 
-        this.timelineView.timeContainer.oncontextmenu = (event:Event) => event.preventDefault();
+        this.timelineView.rootElement.oncontextmenu = (event:Event) => event.preventDefault();
 
 
     }
@@ -57,11 +57,11 @@ export class TimelineControl{
                 break;
             case 'zoom':
                 // zoom in = negative!
-                console.log(this.timelineView.timeContainer.getBoundingClientRect().width)
+                console.log(this.timelineView.rootElement.getBoundingClientRect().width)
                 if (a !== undefined && b!== undefined){
 
                     const zoom = this.timeframe/(1000 * 10)
-                    const factor =  <number>b/this.timelineView.timeContainer.getBoundingClientRect().width
+                    const factor =  <number>b/this.timelineView.rootElement.getBoundingClientRect().width
                     a =a>0?1:-1
                     this.start = this.start.add(-a*zoom*factor,'second') 
        

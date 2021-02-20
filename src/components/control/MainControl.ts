@@ -5,10 +5,15 @@ import { TimelineView } from "../view/timeline/TimelineView";
 import { DataManager } from "./DataManager";
 import { TimelineControl } from "./TimelineControl";
 
+
+
+
 export class MainControl{
     mainView: MainView;
     timeline: TimelineControl;
     datacontrol: DataManager;
+    counter = 0
+    deltaX = 0
 
 
 
@@ -32,21 +37,46 @@ export class MainControl{
 
 
     addEvents(){
-        this.mainView.rootElement.onclick = () => console.log('fuck you')
-        this.mainView.rootElement.ondrag = this.drag.bind(this)
-        this.mainView.rootElement.ondragstart = this.drag.bind(this)
+        
+        
+        
+        const hammerview = new Hammer(this.mainView.rootElement)
+
+
+        // hammerview.on('pan', (event:any) => console.log(event))
+        hammerview.on('pan', this.drag.bind(this))
+        hammerview.on('panstart',this.dragStart.bind(this))
+        hammerview.on('panend', this.dragEnd.bind(this))
+        // hammerview.onpan = (event) => console.log(event) 
+        // this.mainView.rootElement.onclick = () => console.log('fuck you')
+        // this.mainView.rootElement.ondrag = this.drag.bind(this)
+        // this.mainView.rootElement.ondragstart = this.drag.bind(this)
         this.mainView.rootElement.onwheel = this.changeZoom.bind(this)
-        this.mainView.rootElement.onmousedown = this.drag.bind(this)
-        this.mainView.rootElement.onmousemove = this.drag.bind(this)
+        // this.mainView.rootElement.onmousedown = this.drag.bind(this)
+        // this.mainView.rootElement.onmousemove = this.drag.bind(this)
     }
 
 
+    dragStart(event:any){
+        this.deltaX = 0;
+    }
 
-    drag(event:MouseEvent){
-        if (event.buttons == 1){
-            this.timeline.updateScale('linear',-event.movementX*this.timeline.timeframe/(1000*1000))
-            this.render()  
-        }
+    dragEnd(event:any){
+
+    }
+
+
+    drag(event:any){
+        // console.log(event)
+
+        var deltaX = event.deltaX;
+        deltaX -= this.deltaX;
+        this.timeline.updateScale('linear',-deltaX *this.timeline.timeframe/(1000*1000)*0.7)
+        // this.timeline.updateScale('linear',move *this.timeline.timeframe/(1000*1000)*10)
+        this.render()
+        this.deltaX += deltaX;
+
+  
     }
 
     changeZoom(event:WheelEvent){
@@ -56,9 +86,9 @@ export class MainControl{
     }
 
     render(){
-        this.datacontrol.render(this.timeline.start,this.timeline.end);
         this.mainView.render();
         this.timeline.render();
+        this.datacontrol.render(this.timeline.start,this.timeline.end);
     }
 
 

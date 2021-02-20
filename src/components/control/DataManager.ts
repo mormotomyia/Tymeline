@@ -58,11 +58,11 @@ export class DataManager{
 
     render(start:dayjs.Dayjs,end:dayjs.Dayjs):void{
         const elements = this.getVisibleElements(start,end)
-        this.dataView.render(elements);
+        this.dataView.render(elements,start,end);
     }
 
     private getVisibleElements(start:dayjs.Dayjs,end:dayjs.Dayjs):Array<TableData>{
-        console.log(start.format(),end.format())
+        // console.log(start.format(),end.format())
 
         const visibleData:Array<TableData> = []
         this.tableData.forEach((value,key,map) => {
@@ -73,8 +73,8 @@ export class DataManager{
             
             // console.log(this.components.timeLine?.range)
 
-            console.log(value.start.format())
-            console.log(value.end.format())
+            // console.log(value.start.format())
+            // console.log(value.end.format())
             if (value.end < start || value.start > end){
                 
             }

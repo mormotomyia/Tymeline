@@ -3,11 +3,12 @@ import { ITableOptions } from "../interfaces/ITableOptions";
 
 import { TimelineView, Transform } from "./view/timeline/TimelineView";
 
-import { TimelineDomItems } from "./model/DomItems";
+import { DomItems } from "./model/DomItems";
 import { DataManager } from "./control/DataManager";
 
 
 import { MainControl } from "./control/MainControl";
+import dayjs from "dayjs";
 
 export class MormoTable{
    
@@ -24,7 +25,7 @@ export class MormoTable{
     constructor(container:HTMLElement,options:ITableOptions){
         
         this.root = container
-        this.props  = {domItems:new TimelineDomItems(),dom:{}};
+        this.props  = {domItems:new DomItems(),dom:{}};
         this.tableOptions = options;
         
         if (this.tableOptions?.dates===undefined){
@@ -43,6 +44,7 @@ export class MormoTable{
     }
 
     render() {
+        
         this.mainControl.render();
     }
 

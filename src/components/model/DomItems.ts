@@ -1,28 +1,28 @@
 import { IDomItems } from "../../interfaces/IObject"
 
-export class TimelineDomItems implements IDomItems{
+export class DomItems implements IDomItems{
     
     legendMajor: Array<HTMLElement>
-    legendMinor: Array<HTMLElement>
+    // legendMinor: Array<HTMLElement>
     redundantLegendMajor:Array<HTMLElement>
-    redundantLegendMinor: Array<HTMLElement>
+    // redundantLegendMinor: Array<HTMLElement>
     
     constructor(){
         
        
         this.legendMajor= []
-        this.legendMinor = []
+        // this.legendMinor = []
         this.redundantLegendMajor= []
-        this.redundantLegendMinor= []
+        // this.redundantLegendMinor= []
     }
 
 
     clearLegend():void{
         this.redundantLegendMajor = this.legendMajor;
-        this.redundantLegendMinor = this.legendMinor;
+        // this.redundantLegendMinor = this.legendMinor;
   
         this.legendMajor = []
-        this.legendMinor = []
+        // this.legendMinor = []
        
     }
 }

@@ -2,33 +2,10 @@
 import TimeStep from "./TimeStep";
 import { IProps } from "../../../interfaces/IObject";
 import dayjs, { Dayjs } from "dayjs";
-import { ComponentCollection } from "../../model/ComponentCollection";
-import { TimelineDomItems } from "../../model/DomItems";
+import { DomItems } from "../../model/DomItems";
 
 const MAX = 1000;
 const print = (...args:any) => console.log(args)
-
-
-
-// Date.prototype.getWeek = function() {
-//     var date = new Date(this.getTime());
-//     date.setHours(0, 0, 0, 0);
-//     // Thursday in current week decides the year.
-//     date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-//     // January 4 is always in week 1.
-//     var week1 = new Date(date.getFullYear(), 0, 4);
-//     // Adjust to Thursday in week 1 and count number of weeks from date to week1.
-//     return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000
-//                           - 3 + (week1.getDay() + 6) % 7) / 7);
-//   }
-  
-//   // Returns the four-digit year corresponding to the ISO week of the date.
-//   Date.prototype.getWeekYear = function() {
-//     var date = new Date(this.getTime());
-//     date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-//     return date.getFullYear();
-//   }
-
 
 
 
@@ -65,25 +42,27 @@ export class TimelineView {
     // timelineModel: TimelineModel;
     timestep:TimeStep
     // rootElement:HTMLElement;
-    timeContainer: HTMLDivElement;
-    domItems: TimelineDomItems;
+    rootElement: HTMLDivElement;
+    domItems: DomItems;
 
 
    
     constructor(timeContainer:HTMLDivElement){
-        this.timestep = new TimeStep(dayjs().subtract(7,'day'),dayjs().add(7,'day'),1000*3600*24)
-        this.timeContainer =timeContainer;
+        // this.timestep = new TimeStep(dayjs().subtract(7,'day'),dayjs().add(7,'day'),1000*3600*24)
+        this.timestep = new TimeStep(dayjs(),dayjs(),1)
+        this.rootElement =timeContainer;
 
-        this.domItems = new TimelineDomItems()
+        this.domItems = new DomItems()
 
     }
 
 
     updateScale(start:dayjs.Dayjs,end:dayjs.Dayjs){
                 // console.log(this.timeframe)
-                const minStep = end.diff(start) / (this.timeContainer.getBoundingClientRect().width / 80)
+                const minStep = end.diff(start) / (this.rootElement.getBoundingClientRect().width / 80)
                 // console.log(minStep/1000/3600)
-                this.timestep.updateScale(start,end, minStep)
+                const millis =end.diff(start)
+                this.timestep.updateScale(start.subtract(millis/10,"millisecond"),end.add(millis/10,"millisecond"), minStep)
     }
 
 
@@ -94,7 +73,7 @@ export class TimelineView {
      
         this.updateScale(start,end)
         this.domItems.clearLegend()
-        console.log('___')
+        // console.log('___')
        
       
         while (this.timestep.hasNext()&& count < MAX){
@@ -109,10 +88,9 @@ export class TimelineView {
         this.domItems.redundantLegendMajor.forEach(element => {
             element.parentNode?.removeChild(element)
         });
-        this.domItems.redundantLegendMinor.forEach(element => {
-            element.parentNode?.removeChild(element)
-        });
-        this.domItems.redundantLegendMajor = []
+        // this.domItems.redundantLegendMinor.forEach(element => {
+        //     element.parentNode?.removeChild(element)
+        // });
         this.domItems.redundantLegendMajor = []
         
         
@@ -124,17 +102,18 @@ export class TimelineView {
 
     private reuseDomComponent(isMajor:boolean, classname:string,current: dayjs.Dayjs, content:string, start:dayjs.Dayjs,end:dayjs.Dayjs) {
         let reusedComponent
-        if (isMajor){
-            reusedComponent = this.domItems.redundantLegendMajor.shift();
-        } else {
-            reusedComponent = this.domItems.redundantLegendMinor.shift();
-        }
+        reusedComponent = this.domItems.redundantLegendMajor.shift();
+        
+        // if (isMajor){
+        // } else {
+        //     reusedComponent = this.domItems.redundantLegendMinor.shift();
+        // }
 
         if (!reusedComponent){
             const content =document.createElement('div');
             reusedComponent = document.createElement('div');
             reusedComponent.appendChild(content);
-            this.timeContainer.appendChild(reusedComponent) 
+            this.rootElement.appendChild(reusedComponent) 
         }
 
         // TODO this needs some more handling, there could be some scripts in here
@@ -144,19 +123,19 @@ export class TimelineView {
         reusedComponent.classList.add("mormo-time-element")
         const offset = this.setOffset(current,start,end) //fuck!
         reusedComponent.style.transform = `translate(${offset}px)`
-        if(isMajor){
-            this.domItems.legendMajor.push(reusedComponent);
-        }
-        else{
-            this.domItems.legendMinor.push(reusedComponent);
-        }
+        this.domItems.legendMajor.push(reusedComponent);
+        // if(isMajor){
+        // }
+        // else{
+        //     this.domItems.legendMinor.push(reusedComponent);
+        // }
 
         return reusedComponent;
     }
 
     private setOffset(current:dayjs.Dayjs, start:dayjs.Dayjs, end:dayjs.Dayjs){
        
-        return this.timeContainer.getBoundingClientRect().width*(current.diff(start)/end.diff(start))
+        return this.rootElement.getBoundingClientRect().width*(current.diff(start)/end.diff(start))
 
 
     }

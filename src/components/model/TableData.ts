@@ -46,7 +46,7 @@ export class TableData implements ITableData {
             this.start = start
         }
 
-        console.log(length,end)
+        // console.log(length,end)
         
        
         if (typeof(end)==='number'){
