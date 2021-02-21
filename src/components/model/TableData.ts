@@ -5,13 +5,18 @@ import { } from "../view/timeline/TimelineView";
 import dayjs from "dayjs";
 import { type } from "node:os";
 
+function log(ev:any) {
+    console.log(ev);
+   }
 
+// export function createComponentFromItableData(data:ITableData, rootitem: HTMLElement){
+//     rootitem.
 
-
+// }
 
 
 export class TableData implements ITableData {
-    id: string | number;
+    id: string;
     // length: number;
 
     start: dayjs.Dayjs;
@@ -28,11 +33,7 @@ export class TableData implements ITableData {
         }
         const end = start.add(length,'second')
         return new TableData(id,content,start,end)
-
-
     } 
-
-
 
 
     // constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number)
@@ -58,7 +59,7 @@ export class TableData implements ITableData {
         } 
         
 
-        this.id = id;
+        this.id = id.toString();
         this.content = content;
     }
 }

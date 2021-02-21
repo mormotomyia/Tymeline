@@ -168,11 +168,13 @@ export class TimeStep{
         }
         // IMPORTANT: we have no breaks in this switch! (this is no bug)
         // noinspection FallThroughInSwitchStatementJS
+        /*eslint no-fallthrough: "error"*/
         switch (this.scale) {
-          case 'year':
+          
+          case 'year': 
             this.current =this.current.year(this.step * Math.floor(this.current.year() / this.step));
             this.current =this.current.month(0);
-          case 'month':        this.current =this.current.date(1);          // eslint-disable-line no-fallthrough
+          case 'month':        this.current =this.current.date(1);          
           case 'week':                                        // eslint-disable-line no-fallthrough
           case 'day':                                         // eslint-disable-line no-fallthrough
           case 'weekday':      this.current =this.current.hour(0);         // eslint-disable-line no-fallthrough

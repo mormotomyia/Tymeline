@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { MormoTable } from "./components/mormoTable";
 
 
-const bg = new MormoTable(document.getElementsByTagName('body')[0],{size:{width:1400,height:500},colorschema:{text:'black',background:'lightblue',borders:'red'}});
+const bg = new MormoTable(document.getElementsByTagName('body')[0],{size:{width:1400,height:400},colorschema:{text:'black',background:'lightblue',borders:'red'}});
 bg.start();
 
 bg.setTable([

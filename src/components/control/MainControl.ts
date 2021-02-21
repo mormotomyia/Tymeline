@@ -57,11 +57,12 @@ export class MainControl{
     }
 
 
-    dragStart(event:any){
+    dragStart(_:any){
+
         this.deltaX = 0;
     }
 
-    dragEnd(event:any){
+    dragEnd(_:any){
 
     }
 

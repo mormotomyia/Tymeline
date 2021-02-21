@@ -117,7 +117,7 @@ export class TimelineView {
         }
 
         // TODO this needs some more handling, there could be some scripts in here
-        reusedComponent.childNodes[0].innerHTML = `${content}`
+        reusedComponent.children[0].innerHTML = `${content}`
         reusedComponent.className = `${classname}`
         reusedComponent.classList.add(`${isMajor?'mormo-time-label':'mormo-time-label'}`)
         reusedComponent.classList.add("mormo-time-element")

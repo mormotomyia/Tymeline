@@ -65,16 +65,7 @@ export class DataManager{
         // console.log(start.format(),end.format())
 
         const visibleData:Array<TableData> = []
-        this.tableData.forEach((value,key,map) => {
-            // console.log(value)
-            // console.log(this.components.timeLine!.start)
-            // console.log( value.start > this.components.timeLine!.end)
-            // console.log(value.end < this.components.timeLine!.start)
-            
-            // console.log(this.components.timeLine?.range)
-
-            // console.log(value.start.format())
-            // console.log(value.end.format())
+        this.tableData.forEach((value) => {
             if (value.end < start || value.start > end){
                 
             }
@@ -87,3 +78,4 @@ export class DataManager{
         return visibleData;
     }
 }
+
