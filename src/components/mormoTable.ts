@@ -50,11 +50,11 @@ export class MormoTable{
 
  
     setTable(argument:any){
-        this.mainControl.datacontrol.setTable(argument);
+        this.mainControl.dataControl.setTable(argument);
         this.render()
     }
     updateTable(argument:any) {
-        this.mainControl.datacontrol.updateTable(argument);
+        this.mainControl.dataControl.updateTable(argument);
         this.render()
     } 
         

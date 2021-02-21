@@ -22,20 +22,15 @@ export function setDefaultStyle(reusedComponent:HTMLElement){
 export class MormoDataView{
     rootElement: HTMLDivElement;
     domItems: DomItems;
-    styleFunc: Function;
-    contextMenu: HTMLDivElement = document.createElement('div');
-    constructor(rootElement:HTMLDivElement, styleFunc: Function){
-        this.createContextMenu()
+    styleFunc?: Function;
+    
+    constructor(rootElement:HTMLDivElement, styleFunc?: Function){
+        
         this.styleFunc = styleFunc
         this.rootElement =rootElement
         this.domItems = new DomItems()
-        this.rootElement.appendChild(this.contextMenu)
-        this.rootElement.oncontextmenu = (event:MouseEvent) => this.setPosition(event)
         
-        window.addEventListener("click", (e:MouseEvent) => {
-            console.log(e.target)
-            this.toggleMenu("hide");
-          });
+        
     }
 
 
@@ -96,50 +91,7 @@ export class MormoDataView{
         
     }
 
-    createContextMenu(){
-        const list = document.createElement('div')
-        list.className = 'contextMenu'
-        this.contextMenu.style.width = 'inherit'
-
-        const info = new CustomButton('Info')
-        const modify = new CustomButton('Change')
-        const del = new CustomButton('Delete')
-        
-        
-        info.className = 'context-button'
-        modify.className = 'context-button'
-        del.className = 'context-button'
-        this.contextMenu.appendChild(info)
-        this.contextMenu.appendChild(modify)
-        this.contextMenu.appendChild(del)
-
-        // this.contextMenu.appendChild(list)
-
-
-
-        this.contextMenu.style.zIndex = "999"
-        this.contextMenu.style.display = 'none'
-        // this.contextMenu.style.height = '200px'
-        this.contextMenu.style.width = '120px'
-        this.contextMenu.style.backgroundColor = 'rgb(240,240,240)'
-        this.contextMenu.style.borderRadius = '2px'
-        this.contextMenu.style.position = 'absolute'
-        this.contextMenu.style.boxShadow = '5px 5px 5px rgb(150,150,150)'
-    
-    }
-    
-    toggleMenu = (command:string) => {
-        this.contextMenu.style.display = command === "show" ? "block" : "none";
-      };
-    
-    setPosition = (event:MouseEvent) => {
-        event.preventDefault();
-        console.log(event)
-
-        this.contextMenu.style.left = `${event.pageX-5}px`;
-        this.contextMenu.style.top = `${event.pageY-5}px`;
-        this.toggleMenu("show");
-      };
+   
 
 
 }
