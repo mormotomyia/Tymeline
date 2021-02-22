@@ -1,10 +1,14 @@
-export class DataViewItem{
+import { CustomHTMLElement } from "customhtmlbase";
+
+@CustomHTMLElement({
+    selector:'data-view-item', 
+    template:'<div class=content></div>',useShadow:false,style:''})
+export class DataViewItem extends HTMLElement{
     content: HTMLDivElement;
-    reusedComponent: HTMLDivElement;
-    // contextMenu: HTMLDivElement = document.createElement('div');
- 
-    
-    constructor(){
+
+    constructor(rootElement:HTMLElement){
+        super()
+        rootElement.appendChild(this)
         //  TODO this needs some way to distinguish between "extending the time" aka making some element longer
         // and "changing the time" aka moving the element around with fixed length.
         // there needs to be a way to support either an both at the same time
@@ -14,19 +18,20 @@ export class DataViewItem{
         // where do I even fire them to?!
         // this does need some more thought! (as of right now this is just a builder class which is reusable but also not well defined)
 
-        this.content = document.createElement('div');
+        this.style.display = 'block'
+
+        this.content = <HTMLDivElement>this.getElementsByClassName('content')[0]
         this.content.style.userSelect = 'none'
-        this.reusedComponent = document.createElement('div');
-        this.reusedComponent.appendChild(this.content);
+        
         this.content.style.pointerEvents= 'none'
-        this.reusedComponent.className ='mormo-element'
-        const hammerview = new Hammer(this.reusedComponent);
-        this.reusedComponent.onmousemove = this.changeMouseOnEdgeLeftRight
+        this.className ='mormo-element'
+        const hammerview = new Hammer(this);
+        this.onmousemove = this.changeMouseOnEdgeLeftRight
         // this.reusedComponent.oncontextmenu = (event:MouseEvent) => event.preventDefault()
     }
 
     get HTML(){
-        return this.reusedComponent;
+        return this;
     }
 
     changeMouseOnEdgeLeftRight(event:MouseEvent){

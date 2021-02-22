@@ -60,10 +60,11 @@ export class MormoDataView extends Observable{
         reusedComponent = this.domItems.redundantLegendMajor.shift();
         if (!reusedComponent){
 
-            const compoonent = new DataViewItem() //FIXME THIS NEEDS TO BE DONE IN SOME BETTER WAY TO ENABLE EVENTS ON THESE OBJECTS TO PROPAGATE.
+            reusedComponent = new DataViewItem(this.rootElement) //FIXME THIS NEEDS TO BE DONE IN SOME BETTER WAY TO ENABLE EVENTS ON THESE OBJECTS TO PROPAGATE.
+            
             // alternative idea is that the components dont act, but just serve as a reference for lookup in the model!
-            reusedComponent = compoonent.HTML;
-            this.rootElement.appendChild(reusedComponent)
+            // reusedComponent = compoonent.HTML;
+            // this.rootElement.appendChild(reusedComponent)
             setDefaultStyle(reusedComponent)
            
             
@@ -72,6 +73,7 @@ export class MormoDataView extends Observable{
         reusedComponent.id = `${element.id}`
         reusedComponent.onclick = (ev:MouseEvent) => console.log(`${ev} clicked`)
         reusedComponent.children[0].innerHTML =  element.content.text;
+        
         const offset = this.setOffset(element.start,start,end) //fuck!
         reusedComponent.style.transform = `translate(${offset}px)`
         const width = this.setLength(element.start,element.end,start,end) //fuck!
