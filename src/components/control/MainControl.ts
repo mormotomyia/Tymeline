@@ -1,3 +1,4 @@
+
 import dayjs from "dayjs";
 import { IObserver, Observer } from "../../observer/Observer";
 import { MormoDataView } from "../view/dataView/dataView";
@@ -19,6 +20,7 @@ export class MainControl implements IObserver{
     observer: Observer;
     contextMenuControl: ContextMenuControl;
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     constructor(root:HTMLElement, options:Object){
         const dataOptions = {}
         const timelineOptions = { ...options,start:dayjs().subtract(7,"day"), end:dayjs().add(7,"day")}
@@ -36,13 +38,15 @@ export class MainControl implements IObserver{
         this.addEvents()
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     emit(keyword:string, data:Object):void{
-
+        console.log(keyword)
+        console.log(data)
     }
 
 
     addEvents(){
-        
+        // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
         const hammerview = new Hammer(this.mainView.rootElement)
         hammerview.on('pan', this.drag.bind(this))
         hammerview.on('panstart',this.dragStart.bind(this))
@@ -52,29 +56,30 @@ export class MainControl implements IObserver{
         
 
     }
-
-
-    
+ 
 
 
     dragStart(_:any){
-
         this.deltaX = 0;
     }
 
-    dragEnd(_:any){
-
+    dragEnd(_:any) {
+        
     }
 
 
     drag(event:any){
-        // console.log(event)
-        var deltaX = event.deltaX;
-        deltaX -= this.deltaX;
-        this.timelineControl.updateScale('linear',-deltaX *this.timelineControl.timeframe/(1000*1000)*0.7)
-        // this.timeline.updateScale('linear',move *this.timeline.timeframe/(1000*1000)*10)
-        this.render()
-        this.deltaX += deltaX;
+        console.log(event.srcEvent)
+        // if 
+
+        if (event.srcEvent.target.classList.contains('mormo-items')){
+            let deltaX = event.deltaX;
+            deltaX -= this.deltaX;
+            this.timelineControl.updateScale('linear',-deltaX *this.timelineControl.timeframe/(1000*1000)*0.7)
+            // this.timeline.updateScale('linear',move *this.timeline.timeframe/(1000*1000)*10)
+            this.render()
+            this.deltaX += deltaX;
+        }
 
   
     }

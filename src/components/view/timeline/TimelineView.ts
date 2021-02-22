@@ -1,8 +1,9 @@
 
 import TimeStep from "./TimeStep";
-import { IProps } from "../../../interfaces/IObject";
-import dayjs, { Dayjs } from "dayjs";
+
+import dayjs from "dayjs";
 import { DomItems } from "../../model/DomItems";
+import { Observable } from "../../../observer/Observable";
 
 const MAX = 1000;
 const print = (...args:any) => console.log(args)
@@ -14,7 +15,7 @@ export class Transform{
     deltaY:number;
     scale:number;
 
-    constructor(x:number=0,y:number=0,scale:number=1){
+    constructor(x=0,y=0,scale=1){
         this.deltaX = x;
         this.deltaY = y;
         this.scale = scale;
@@ -38,24 +39,20 @@ function daysInMonth (date:Date) {
     return new Date(date.getFullYear(), date.getMonth(), 0).getDate();
 }
 
-export class TimelineView {
+export class TimelineView extends Observable{
     // timelineModel: TimelineModel;
     timestep:TimeStep
     // rootElement:HTMLElement;
     rootElement: HTMLElement;
     domItems: DomItems;
 
-
-   
     constructor(timeContainer:HTMLElement){
-        // this.timestep = new TimeStep(dayjs().subtract(7,'day'),dayjs().add(7,'day'),1000*3600*24)
-        this.timestep = new TimeStep(dayjs(),dayjs(),1)
-        this.rootElement =timeContainer;
-
+        super();
+        this.timestep = new TimeStep(dayjs(),dayjs(),1) // this may not be the optimal default value, please verify if this is ever accessable, even only by accident
+        this.rootElement = timeContainer;
         this.domItems = new DomItems()
 
     }
-
 
     updateScale(start:dayjs.Dayjs,end:dayjs.Dayjs){
                 // console.log(this.timeframe)
@@ -65,22 +62,20 @@ export class TimelineView {
                 this.timestep.updateScale(start.subtract(millis/10,"millisecond"),end.add(millis/10,"millisecond"), minStep)
     }
 
-
     render(start:dayjs.Dayjs,end:dayjs.Dayjs): void{
     
-        let count = 0;
+        const count = 0;
         this.timestep.start();
      
         this.updateScale(start,end)
         this.domItems.clearLegend()
-        // console.log('___')
-       
+
       
         while (this.timestep.hasNext()&& count < MAX){
             this.timestep.next()
             const isMajor = this.timestep.isMajor()
             const className = this.timestep.getClassName();
-            let current = this.timestep.getCurrent()
+            const current = this.timestep.getCurrent()
             // console.log(className)
             this.reuseDomComponent(isMajor,className,current,this.timestep.getLabel(current,isMajor),start,end)
         }
@@ -88,15 +83,9 @@ export class TimelineView {
         this.domItems.redundantLegendMajor.forEach(element => {
             element.parentNode?.removeChild(element)
         });
-        // this.domItems.redundantLegendMinor.forEach(element => {
-        //     element.parentNode?.removeChild(element)
-        // });
+
         this.domItems.redundantLegendMajor = []
         
-        
-
-        // kill all redundant items
-
     }
 
 
@@ -104,11 +93,6 @@ export class TimelineView {
         let reusedComponent
         reusedComponent = this.domItems.redundantLegendMajor.shift();
         
-        // if (isMajor){
-        // } else {
-        //     reusedComponent = this.domItems.redundantLegendMinor.shift();
-        // }
-
         if (!reusedComponent){
             const content =document.createElement('div');
             reusedComponent = document.createElement('div');
@@ -124,11 +108,6 @@ export class TimelineView {
         const offset = this.setOffset(current,start,end) //fuck!
         reusedComponent.style.transform = `translate(${offset}px)`
         this.domItems.legendMajor.push(reusedComponent);
-        // if(isMajor){
-        // }
-        // else{
-        //     this.domItems.legendMinor.push(reusedComponent);
-        // }
 
         return reusedComponent;
     }
@@ -137,10 +116,6 @@ export class TimelineView {
        
         return this.rootElement.getBoundingClientRect().width*(current.diff(start)/end.diff(start))
 
-
     }
     
-
-
 }
-
