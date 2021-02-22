@@ -1,6 +1,6 @@
 # README
 
-##MVC
+##MVP
 
 ### Model
 
