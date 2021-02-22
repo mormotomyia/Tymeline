@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { Observer } from "../../observer/Observer";
+import { IObserver, Observer } from "../../observer/Observer";
 import { MormoDataView } from "../view/dataView/dataView";
 import { MainView } from "../view/mainView";
 import { TimelineView } from "../view/timeline/TimelineView";
@@ -10,7 +10,7 @@ import { TimelineControl } from "./TimelineControl";
 
 
 
-export class MainControl{
+export class MainControl implements IObserver{
     mainView: MainView;
     timelineControl: TimelineControl;
     dataControl: DataControl;
@@ -18,9 +18,6 @@ export class MainControl{
     deltaX = 0
     observer: Observer;
     contextMenuControl: ContextMenuControl;
-
-
-
 
     constructor(root:HTMLElement, options:Object){
         const dataOptions = {}
@@ -32,19 +29,15 @@ export class MainControl{
 
         // this needs to be moved to the respective control points?
 
-        const timelineView = new TimelineView(this.mainView.timeContainer);
-
-        this.timelineControl = new TimelineControl(timelineView,timelineOptions);
-    
-        const dataView = new MormoDataView(this.mainView.tableContainer);
-
-        this.dataControl = new DataControl(dataView)
-
+        this.timelineControl = new TimelineControl(this.mainView.timeContainer,timelineOptions);
+        this.dataControl = new DataControl(this.mainView.tableContainer)
         this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement)
         
-        // this.mainView.subscribe(this.observer);
-  
         this.addEvents()
+    }
+
+    emit(keyword:string, data:Object):void{
+
     }
 
 

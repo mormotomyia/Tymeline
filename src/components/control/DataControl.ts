@@ -9,8 +9,8 @@ export class DataControl{
     
 
 
-    constructor(dataview:MormoDataView){
-        this.dataView = dataview;
+    constructor(rootElement:HTMLElement){
+        this.dataView = new MormoDataView(rootElement);
     }
 
 

@@ -20,11 +20,11 @@ export function setDefaultStyle(reusedComponent:HTMLElement){
     reusedComponent.style.boxShadow = '2px 2px 2px rgb(55,55,55)'
 }
 export class MormoDataView{
-    rootElement: HTMLDivElement;
+    rootElement: HTMLElement;
     domItems: DomItems;
     styleFunc?: Function;
     
-    constructor(rootElement:HTMLDivElement, styleFunc?: Function){
+    constructor(rootElement:HTMLElement, styleFunc?: Function){
         
         this.styleFunc = styleFunc
         this.rootElement =rootElement

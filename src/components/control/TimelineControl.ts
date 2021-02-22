@@ -9,8 +9,9 @@ export class TimelineControl{
 
     timelineView: TimelineView;
 
-    constructor(timelineView:TimelineView,options:{start:dayjs.Dayjs, end:dayjs.Dayjs}){
-        this.timelineView = timelineView;
+    constructor(rootElement:HTMLElement,options:{start:dayjs.Dayjs, end:dayjs.Dayjs}){
+
+        this.timelineView = new TimelineView(rootElement);
         this.start = options.start;
         this.end = options.end;
 

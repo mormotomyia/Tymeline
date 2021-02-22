@@ -42,12 +42,12 @@ export class TimelineView {
     // timelineModel: TimelineModel;
     timestep:TimeStep
     // rootElement:HTMLElement;
-    rootElement: HTMLDivElement;
+    rootElement: HTMLElement;
     domItems: DomItems;
 
 
    
-    constructor(timeContainer:HTMLDivElement){
+    constructor(timeContainer:HTMLElement){
         // this.timestep = new TimeStep(dayjs().subtract(7,'day'),dayjs().add(7,'day'),1000*3600*24)
         this.timestep = new TimeStep(dayjs(),dayjs(),1)
         this.rootElement =timeContainer;

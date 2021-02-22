@@ -22,10 +22,6 @@ export class MainView {
         this.timeContainer.classList.add('mormo-time');
         this.style(tableOptions);
 
-        // addEventListener(this.rootElement,'ondrag',console.log)
-        // this.rootElement.atta
-        // this.rootElement.attachEvent('ondrag',console.log)
-        // this.rootElement.addEventListener('click',()=>console.log('abbbb'))
         this.rootElement.appendChild(this.tableContainer);
         this.rootElement.appendChild(this.timeContainer);
         
