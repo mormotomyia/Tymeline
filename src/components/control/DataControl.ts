@@ -1,9 +1,9 @@
 import { IBaseTableData, IProps, ITableData, ITableDataEntry } from "../../interfaces/IObject"
 import { TableData } from "../model/TableData"
 import dayjs from "dayjs";
-import { MormoDataView } from "../view/dataview/dataView";
+import { MormoDataView } from "../view/dataView/dataView";
 
-export class DataManager{
+export class DataControl{
     tableData: Map<string,TableData> = new Map();
     dataView: MormoDataView;
     

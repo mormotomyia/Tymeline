@@ -4,7 +4,7 @@ import { ITableOptions } from "../interfaces/ITableOptions";
 import { TimelineView, Transform } from "./view/timeline/TimelineView";
 
 import { DomItems } from "./model/DomItems";
-import { DataManager } from "./control/DataManager";
+import { DataControl } from "./control/DataControl";
 
 
 import { MainControl } from "./control/MainControl";

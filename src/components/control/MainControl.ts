@@ -1,9 +1,10 @@
 import dayjs from "dayjs";
 import { Observer } from "../../observer/Observer";
-import { MormoDataView } from "../view/dataview/dataView";
+import { MormoDataView } from "../view/dataView/dataView";
 import { MainView } from "../view/mainView";
 import { TimelineView } from "../view/timeline/TimelineView";
-import { DataManager } from "./DataManager";
+import { ContextMenuControl } from "./ContextMenuControl";
+import { DataControl } from "./DataControl";
 import { TimelineControl } from "./TimelineControl";
 
 
@@ -12,10 +13,11 @@ import { TimelineControl } from "./TimelineControl";
 export class MainControl{
     mainView: MainView;
     timelineControl: TimelineControl;
-    dataControl: DataManager;
+    dataControl: DataControl;
     counter = 0
     deltaX = 0
     observer: Observer;
+    contextMenuControl: ContextMenuControl;
 
 
 
@@ -28,15 +30,19 @@ export class MainControl{
 
         this.mainView =  new MainView(root,options);
 
+        // this needs to be moved to the respective control points?
+
         const timelineView = new TimelineView(this.mainView.timeContainer);
 
         this.timelineControl = new TimelineControl(timelineView,timelineOptions);
     
         const dataView = new MormoDataView(this.mainView.tableContainer);
 
-        this.dataControl = new DataManager(dataView)
+        this.dataControl = new DataControl(dataView)
 
-        this.mainView.subscribe(this.observer);
+        this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement)
+        
+        // this.mainView.subscribe(this.observer);
   
         this.addEvents()
     }
@@ -49,9 +55,7 @@ export class MainControl{
         hammerview.on('panstart',this.dragStart.bind(this))
         hammerview.on('panend', this.dragEnd.bind(this))
         this.mainView.rootElement.onwheel = this.changeZoom.bind(this)
-        window.addEventListener("click", (_:MouseEvent) => {
-            this.mainView.toggleMenu("hide");
-          });
+       
         
 
     }
