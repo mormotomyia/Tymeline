@@ -15,7 +15,7 @@ export class DataControl{
 
 
     updateTable(objects:{[key:number]:IBaseTableData}): void
-    updateTable(objects:Array<ITableData>) : void
+    updateTable(objects:Array<ITableDataEntry>) : void
 
     updateTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
         console.log(objects)
@@ -23,11 +23,11 @@ export class DataControl{
             objects.forEach((element) => {
             if (element.length)
             this.tableData.set(element.id.toString(),
-                TableData.fromLength(element.id,element.content,element.start,element.length)
+                TableData.fromLength(element.id,element.content,element.start,element.length,element.canMove,element.canChangeLength)
             )
             if (element.end)
             this.tableData.set(element.id.toString(),
-                new TableData(element.id,element.content,element.start,element.end)
+                new TableData(element.id,element.content,element.start,element.end,element.canMove,element.canChangeLength)
                 )
             })
         }   
@@ -48,7 +48,7 @@ export class DataControl{
     }
 
     setTable(objects:{[key:number]:IBaseTableData}): void
-    setTable(objects:Array<ITableData>) : void
+    setTable(objects:Array<ITableDataEntry>) : void
 
     setTable(objects:{[key:number]:IBaseTableData} | Array<ITableDataEntry> ){
         this.tableData.clear()
@@ -57,7 +57,7 @@ export class DataControl{
 
 
     render(start:dayjs.Dayjs,end:dayjs.Dayjs):void{
-        const elements = this.getVisibleElements(start,end)
+        const elements:Array<ITableData> = this.getVisibleElements(start,end)
         this.dataView.render(elements,start,end);
     }
 
@@ -66,6 +66,7 @@ export class DataControl{
 
         const visibleData:Array<TableData> = []
         this.tableData.forEach((value) => {
+            // eslint-disable-next-line no-empty
             if (value.end < start || value.start > end){
                 
             }

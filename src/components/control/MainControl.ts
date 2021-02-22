@@ -32,7 +32,7 @@ export class MainControl implements IObserver{
         // this needs to be moved to the respective control points?
 
         this.timelineControl = new TimelineControl(this.mainView.timeContainer,timelineOptions);
-        this.dataControl = new DataControl(this.mainView.tableContainer)
+        this.dataControl = new DataControl(this.mainView.rootElement)
         this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement)
         
         // this.addEvents()
@@ -61,18 +61,10 @@ export class MainControl implements IObserver{
     }
 
 
-    // addEvents(){
-    //     // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
-    //     const hammerview = new Hammer(this.mainView.rootElement)
-    //     hammerview.on('pan', this.drag.bind(this))
-    //     hammerview.on('panstart',this.dragStart.bind(this))
-    //     hammerview.on('panend', this.dragEnd.bind(this))
-    //     this.mainView.rootElement.onwheel = this.changeZoom.bind(this)
-    // }
 
 
-
-    dragStart(_:any){
+    dragStart(event:HammerInput){
+        console.log(event.isFirst)
         this.deltaX = 0;
     }
 
@@ -82,9 +74,11 @@ export class MainControl implements IObserver{
 
 
     drag(event:HammerInput){
-        console.log(event.srcEvent)
+        console.log(event.isFirst)
+
+        // console.log(event.srcEvent)
         const target = <HTMLElement>event.srcEvent.target
-        console.log(target.tagName)
+        // console.log(target.tagName)
         if (event.srcEvent.target.classList.contains('mormo-items')){
             let deltaX = event.deltaX;
             deltaX -= this.deltaX;

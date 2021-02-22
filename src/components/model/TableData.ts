@@ -17,27 +17,26 @@ function log(ev:any) {
 
 export class TableData implements ITableData {
     id: string;
-    // length: number;
+    canMove:boolean
+    canChangeLength:boolean
 
     start: dayjs.Dayjs;
     end:dayjs.Dayjs
     content: { text: string; };
 
-    static fromLength(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number):TableData{
+    static fromLength(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number, canMove:boolean, canChangeLength:boolean):TableData{
         if (typeof(start)==='number'){
             start = dayjs(start)
         } else if (typeof(start)==='string'){
             start = dayjs(start)
-        } else {
-            start = start
         }
         const end = start.add(length,'second')
-        return new TableData(id,content,start,end)
+        return new TableData(id,content,start,end,canMove,canChangeLength)
     } 
 
 
     // constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number)
-    constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,end:number|string|dayjs.Dayjs){
+    constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,end:number|string|dayjs.Dayjs, canMove:boolean, canChangeLength:boolean){
 
         if (typeof(start)==='number'){
             this.start = dayjs(start)
@@ -61,6 +60,8 @@ export class TableData implements ITableData {
 
         this.id = id.toString();
         this.content = content;
+        this.canChangeLength = canChangeLength
+        this.canMove = canMove
     }
 }
 

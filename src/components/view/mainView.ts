@@ -2,7 +2,7 @@ import { Observable } from "../../observer/Observable";
 import { CustomButton } from "../custom-components/customButton";
 
 export class MainView extends Observable {
-    tableContainer: HTMLDivElement;
+    // tableContainer: HTMLDivElement;
     timeContainer: HTMLDivElement;
     rootElement: HTMLElement;
     
@@ -18,12 +18,12 @@ export class MainView extends Observable {
         
         this.rootElement =root;
         // this.rootElement.appendChild(this.contextMenu)
-        this.tableContainer = document.createElement('div');
+        // this.tableContainer = document.createElement('div');
         this.timeContainer = document.createElement('div');
         this.timeContainer.classList.add('mormo-time');
         this.style(tableOptions);
 
-        this.rootElement.appendChild(this.tableContainer);
+        // this.rootElement.appendChild(this.tableContainer);
         this.rootElement.appendChild(this.timeContainer);
         this.addEvents()
     
@@ -54,8 +54,8 @@ export class MainView extends Observable {
 
         
         this.rootElement.classList.add('mormo-timeline')
-        this.tableContainer.style.overflowY = 'auto'
-        this.tableContainer.style.overflowX = 'hidden'
+        // this.tableContainer.style.overflowY = 'auto'
+        // this.tableContainer.style.overflowX = 'hidden'
 
 
 
@@ -77,8 +77,8 @@ export class MainView extends Observable {
         if (tableOptions){
             this.rootElement.style.width = `${tableOptions.size.width}px`
             this.rootElement.style.height = `${tableOptions.size.height}px`
-            this.tableContainer.style.height=`${tableOptions.size.height-50}px`
-            this.tableContainer.style.width=`${tableOptions.size.width}px`
+            // this.tableContainer.style.height=`${tableOptions.size.height-50}px`
+            // this.tableContainer.style.width=`${tableOptions.size.width}px`
          
             if(tableOptions.colorschema){
                 this.rootElement.style.color = `${tableOptions.colorschema.text}`

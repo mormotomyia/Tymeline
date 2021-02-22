@@ -10,7 +10,7 @@ export interface IObservable {
 
 
 export class Observable implements IObservable {
-    private subscribers: Array<IObserver> = new Array();
+    private subscribers: Array<IObserver> = [];
     public subscribe(observer:IObserver) {
         //we could check to see if it is already subscribed
         this.subscribers.push(observer);
