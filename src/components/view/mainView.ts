@@ -1,7 +1,7 @@
 import { Observable } from "../../observer/Observable";
 import { CustomButton } from "../custom-components/customButton";
 
-export class MainView {
+export class MainView extends Observable {
     tableContainer: HTMLDivElement;
     timeContainer: HTMLDivElement;
     rootElement: HTMLElement;
@@ -9,6 +9,7 @@ export class MainView {
 
 
     constructor(root:HTMLElement,tableOptions?:any){
+        super()
         if (root.nodeName!=='DIV'){
             const basediv = document.createElement('div')
             root.appendChild(basediv)
@@ -24,10 +25,25 @@ export class MainView {
 
         this.rootElement.appendChild(this.tableContainer);
         this.rootElement.appendChild(this.timeContainer);
-        
+        this.addEvents()
     
     
     }
+
+
+    addEvents(){
+        // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
+        
+        const hammerview = new Hammer(this.rootElement)
+        hammerview.on('pan', (event)=> this.publish('pan',event))
+        // hammerview.on('pan', this.drag.bind(this))
+        hammerview.on('panstart',(event)=> this.publish('panstart',event))
+        hammerview.on('panend', (event)=> this.publish('panend',event))
+        this.rootElement.onwheel = (event)=> this.publish('onwheel',event)
+    }
+
+
+
 
 
 

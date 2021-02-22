@@ -17,7 +17,6 @@ export class MainControl implements IObserver{
     dataControl: DataControl;
     counter = 0
     deltaX = 0
-    observer: Observer;
     contextMenuControl: ContextMenuControl;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -25,9 +24,10 @@ export class MainControl implements IObserver{
         const dataOptions = {}
         const timelineOptions = { ...options,start:dayjs().subtract(7,"day"), end:dayjs().add(7,"day")}
 
-        this.observer = new Observer()
+        
 
         this.mainView =  new MainView(root,options);
+        this.mainView.subscribe(this)
 
         // this needs to be moved to the respective control points?
 
@@ -35,28 +35,41 @@ export class MainControl implements IObserver{
         this.dataControl = new DataControl(this.mainView.tableContainer)
         this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement)
         
-        this.addEvents()
+        // this.addEvents()
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     emit(keyword:string, data:Object):void{
-        console.log(keyword)
-        console.log(data)
+        switch (keyword) {
+            case "pan":
+                this.drag(data)
+                break;
+            case "panstart":
+                this.dragStart(data)
+                break;
+            case "panend":
+                this.dragEnd(data)
+                break;
+            case "onwheel":
+                this.changeZoom(<WheelEvent>data)
+                break;
+            default:
+                break;
+        }
+        // console.log(keyword)
+        // console.log(data)
     }
 
 
-    addEvents(){
-        // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
-        const hammerview = new Hammer(this.mainView.rootElement)
-        hammerview.on('pan', this.drag.bind(this))
-        hammerview.on('panstart',this.dragStart.bind(this))
-        hammerview.on('panend', this.dragEnd.bind(this))
-        this.mainView.rootElement.onwheel = this.changeZoom.bind(this)
-       
-        
+    // addEvents(){
+    //     // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
+    //     const hammerview = new Hammer(this.mainView.rootElement)
+    //     hammerview.on('pan', this.drag.bind(this))
+    //     hammerview.on('panstart',this.dragStart.bind(this))
+    //     hammerview.on('panend', this.dragEnd.bind(this))
+    //     this.mainView.rootElement.onwheel = this.changeZoom.bind(this)
+    // }
 
-    }
- 
 
 
     dragStart(_:any){
@@ -68,10 +81,10 @@ export class MainControl implements IObserver{
     }
 
 
-    drag(event:any){
+    drag(event:HammerInput){
         console.log(event.srcEvent)
-        // if 
-
+        const target = <HTMLElement>event.srcEvent.target
+        console.log(target.tagName)
         if (event.srcEvent.target.classList.contains('mormo-items')){
             let deltaX = event.deltaX;
             deltaX -= this.deltaX;
@@ -80,6 +93,7 @@ export class MainControl implements IObserver{
             this.render()
             this.deltaX += deltaX;
         }
+        else if (event.srcEven)
 
   
     }
