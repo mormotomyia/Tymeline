@@ -113,9 +113,16 @@ export class DataViewItem extends HTMLElement implements IObservable{
     private onSelect(event:HammerInput){
         console.log('onSelect')
         this.selected = !this.selected
-        this.style.borderStyle === 'solid'? this.style.borderStyle = 'hidden':this.style.borderStyle = 'solid'
+        if (this.selected){
+            this.style.borderStyle  = 'solid'
+            this.publish('select',event)
+        }
+        else {
+            this.style.borderStyle = 'hidden'
+            this.publish('unselect',event)
+        }
         // this.style.borderStyle === 'solid'? this.style.borderStyle = 'hidden':this.style.borderStyle = 'solid'
-        this.publish('select',this.id)
+        
     }
 
     

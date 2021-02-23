@@ -7,16 +7,25 @@ import { IObserver } from "../../observer/Observer";
 import { DataViewItem } from "../view/dataView/dataViewItem";
 import { off } from "hammerjs";
 
+
+
+export interface DraggedItem{
+    dom:DataViewItem,
+    data:ITableData|undefined
+    tempStart:dayjs.Dayjs
+    tempEnd:dayjs.Dayjs
+}
 export class DataControl implements IObservable,IObserver{
     tableData: Map<string,TableData> = new Map();
     dataView: MormoDataView;
     subscribers: Array<IObserver> = [];
-    draggedItem: {dom:DataViewItem, data:ITableData|undefined} | undefined;
+    draggedItem: DraggedItem | undefined;
     deltaX = 0;
-    start: dayjs.Dayjs;
-    end: dayjs.Dayjs;
-    tempStart:dayjs.Dayjs;
-    tempEnd:dayjs.Dayjs;
+    
+    selected: Map<string,DraggedItem> = new Map()
+
+    start: dayjs.Dayjs = dayjs();
+    end: dayjs.Dayjs = dayjs();
 
 
     constructor(rootElement:HTMLElement){
@@ -35,6 +44,12 @@ export class DataControl implements IObservable,IObserver{
     public emit(keyword:string, data:any){
         this.publish(keyword, data);
         switch (keyword) {
+            case "select":
+                this.addSelection(<HammerInput>data)
+                break;
+            case "unselect":
+                this.removeSelection(<HammerInput>data)
+                break;
             case "panstartitem":
                 this.dragItemStart(<HammerInput>data)
                 break;
@@ -48,6 +63,14 @@ export class DataControl implements IObservable,IObserver{
 }
 
 
+    addSelection(event:HammerInput){
+        const data = this.tableData.get(event.target.id)!
+        this.selected.set(event.target.id,{dom:<DataViewItem>event.target,data: data, tempStart: data.start,tempEnd: data.end})
+    }
+    removeSelection(event:HammerInput){
+        this.selected.delete(event.target.id)
+    }
+
 
     dragItemStart(event:HammerInput){
         this.deltaX = 0;
@@ -55,38 +78,47 @@ export class DataControl implements IObservable,IObserver{
         if(!event.target.selected){
             event.target.select(event)
         }
-        
-        this.draggedItem = {dom:<DataViewItem>event.target,data: this.tableData.get(event.target.id)}
-        this.tempStart = this.draggedItem.data.start
-        this.tempEnd = this.draggedItem.data.end
+
+
+
+
+
+        // this.draggedItem = {dom:<DataViewItem>event.target,data: this.tableData.get(event.target.id)}
+        // this.tempStart = this.draggedItem.data.start
+        // this.tempEnd = this.draggedItem.data.end
         
     }
 
     dragItem(event:HammerInput){
+
+
         
         let deltaX = event.deltaX;
         deltaX -= this.deltaX;
         // console.log(deltaX)
-        
-        if (this.draggedItem?.data!.canMove && this.draggedItem?.dom.style.cursor=== 'ew-resize' ){
-            const delta = deltaX * this.timeframe/(1000*1000)*0.7 // this is the total offset time!
-            
-            this.tempStart = this.tempStart.add(delta,"second")
-            this.tempEnd = this.tempEnd.add(delta,"second")
-            this.draggedItem.dom.updateTime(this.tempStart,this.tempEnd,this.start,this.end)
-            this.deltaX += deltaX;
-
-
-    }
+        const delta = deltaX * this.timeframe/(1000*1000)*0.7 // this is the total offset time!
+        this.selected.forEach((value:DraggedItem) => {
+            console.log(value.data?.canMove)
+            if (value.data?.canMove && event.target.style.cursor=== 'ew-resize' ){
+                value.tempStart = value.tempStart.add(delta,"second")
+                value.tempEnd = value.tempEnd.add(delta,"second")
+                value.dom.updateTime(value.tempStart,value.tempEnd,this.start,this.end)
+            }
+        })
+        this.deltaX += deltaX;
 }
 
     dragItemEnd(event:HammerInput){
-        (this.draggedItem?.data!.canMove && this.draggedItem?.dom.style.cursor=== 'ew-resize' ){
-            const offset = this.tempStart.diff(this.draggedItem!.data!.start,'seconds')
-            console.log(offset)
-            this.draggedItem?.data?.move(offset)
-        }
-        this.publish('changed',this.draggedItem)
+
+        this.selected.forEach((value:DraggedItem) => {
+            if (value.data?.canMove && event.target.style.cursor=== 'ew-resize'){
+                const offset = value.tempStart.diff(value.data.start,'seconds');
+                value.data?.move(offset);
+            }
+            this.publish('changed',this.draggedItem)
+        });
+
+        
         delete this.draggedItem
 
 
