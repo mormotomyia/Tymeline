@@ -24,6 +24,11 @@ export class TableData implements ITableData {
     end:dayjs.Dayjs
     content: { text: string; };
 
+
+    get length(){
+        return this.end.diff(this.start,"second")
+    }
+
     static fromLength(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number, canMove:boolean, canChangeLength:boolean):TableData{
         if (typeof(start)==='number'){
             start = dayjs(start)
@@ -62,6 +67,21 @@ export class TableData implements ITableData {
         this.content = content;
         this.canChangeLength = canChangeLength
         this.canMove = canMove
+    }
+
+
+    changeLength(delta:number,start:boolean):void{
+        if (start){
+            this.start.add(delta,'second')
+        } else {
+            this.end.add(delta,'second')
+        }
+    }
+
+    move(delta:number):void{
+        this.start = this.start.add(delta,'second')
+        this.end = this.end.add(delta,'second')
+
     }
 }
 

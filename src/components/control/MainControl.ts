@@ -1,6 +1,8 @@
 
 import dayjs from "dayjs";
+import { ITableData } from "../../interfaces/IObject";
 import { IObserver, Observer } from "../../observer/Observer";
+import { TableData } from "../model/TableData";
 import { MormoDataView } from "../view/dataView/dataView";
 import { MainView } from "../view/mainView";
 import { TimelineView } from "../view/timeline/TimelineView";
@@ -18,6 +20,8 @@ export class MainControl implements IObserver{
     counter = 0
     deltaX = 0
     contextMenuControl: ContextMenuControl;
+    draggable = true;
+    
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     constructor(root:HTMLElement, options:Object){
@@ -30,25 +34,40 @@ export class MainControl implements IObserver{
         this.mainView.subscribe(this)
 
         // this needs to be moved to the respective control points?
-
+        
         this.timelineControl = new TimelineControl(this.mainView.timeContainer,timelineOptions);
         this.dataControl = new DataControl(this.mainView.rootElement)
         this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement)
+        
+        this.dataControl.subscribe(this)
+
         
         // this.addEvents()
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    emit(keyword:string, data:Object):void{
+    emit(keyword:string, data:HammerInput|Event):void{
+        // console.log(keyword)
+
         switch (keyword) {
+            case "panstartitem":
+                console.log('here!')
+                this.draggable = false
+                break;
+            case "panitem":
+                break;
+            case "panenditem":
+                console.log('here?')
+                this.draggable = true
+                break;
             case "pan":
-                this.drag(data)
+                if(this.draggable) this.drag(<HammerInput>data)
                 break;
             case "panstart":
-                this.dragStart(data)
+                if(this.draggable) this.dragStart(<HammerInput>data)
                 break;
             case "panend":
-                this.dragEnd(data)
+                if(this.draggable) this.dragEnd(<HammerInput>data)
                 break;
             case "onwheel":
                 this.changeZoom(<WheelEvent>data)
@@ -56,8 +75,6 @@ export class MainControl implements IObserver{
             default:
                 break;
         }
-        // console.log(keyword)
-        // console.log(data)
     }
 
 
@@ -74,7 +91,7 @@ export class MainControl implements IObserver{
 
 
     drag(event:HammerInput){
-        console.log(event.isFirst)
+        // console.log(event.isFirst)
 
         // console.log(event.srcEvent)
         const target = <HTMLElement>event.srcEvent.target
@@ -87,10 +104,9 @@ export class MainControl implements IObserver{
             this.render()
             this.deltaX += deltaX;
         }
-        else if (event.srcEven)
-
-  
     }
+
+    
 
     changeZoom(event:WheelEvent){
         event.preventDefault();

@@ -22,6 +22,9 @@ export class DataViewItem extends HTMLElement implements IObservable{
     canChangeLength=false
     hammerview: HammerManager;
     changeType: ChangeType|null;
+    pullWidth = 20
+    selected = false;
+
     private subscribers: Array<IObserver> = [];
     
     constructor(rootElement:HTMLElement){
@@ -48,24 +51,37 @@ export class DataViewItem extends HTMLElement implements IObservable{
         // this.hammerview.on('pan',(event) => console.log(event))
 
         this.hammerview.on('tap', this.onSelect.bind(this))
-        this.hammerview.on('hammer.input', this.onMove.bind(this))
-        // this.onmousedown = this.changeStart;
-        // this.onmouseup = this.changeEnd;
+        this.hammerview.on('panstart',(event)=>  this.publish('panstartitem',event))
+        this.hammerview.on('pan', (event)=> this.publish('panitem',event))
+        this.hammerview.on('panend', (event)=> this.publish('panenditem',event))
+
         this.onmousemove = this.changeMouseOnEdgeLeftRight
         // this.onmouseleave = () => {console.log('LEAVE');this.changeType = null;}
     }
 
+
+ 
+
+
+
     public update(element:ITableData, start:dayjs.Dayjs, end:dayjs.Dayjs){
+        // console.log('update')
         this.canMove = element.canMove
         this.canChangeLength = element.canChangeLength
 
         this.id = `${element.id}`
         this.onclick = (ev:MouseEvent) => console.log(`${ev} clicked`)
         this.content.innerHTML =  element.content.text;
+        this.updateTime(element.start,element.end,start,end)
         
-        const offset = this.setOffset(element.start,start,end) //fuck!
+        
+    }
+
+
+    public updateTime(elementStart:dayjs.Dayjs,elementEnd:dayjs.Dayjs,start:dayjs.Dayjs,end:dayjs.Dayjs){
+        const offset = this.setOffset(elementStart,start,end) //fuck!
         this.style.transform = `translate(${offset}px)`
-        const width = this.setLength(element.start,element.end,start,end) //fuck!
+        const width = this.setLength(elementStart,elementEnd,start,end) //fuck!
         this.style.width = `${width}px`
     }
 
@@ -89,17 +105,20 @@ export class DataViewItem extends HTMLElement implements IObservable{
         return this;
     }
 
-    onMove(event:HammerInput){
-        console.log(event.isFirst)
-        // console.log(event)
+    select(event:HammerInput){
+        this.onSelect(event)
     }
 
-    onSelect(event:any){
+
+    private onSelect(event:HammerInput){
         console.log('onSelect')
+        this.selected = !this.selected
         this.style.borderStyle === 'solid'? this.style.borderStyle = 'hidden':this.style.borderStyle = 'solid'
         // this.style.borderStyle === 'solid'? this.style.borderStyle = 'hidden':this.style.borderStyle = 'solid'
         this.publish('select',this.id)
     }
+
+    
         
     changeMouseOnMove(){
         
@@ -113,10 +132,10 @@ export class DataViewItem extends HTMLElement implements IObservable{
         element.style.cursor = 'default' 
         if(this.canChangeLength){
             
-            if (element.clientWidth+offsetLeft-event.clientX<10){
+            if (element.clientWidth+offsetLeft-event.clientX<this.pullWidth){
                 element.style.cursor = 'e-resize' 
             }
-            else if (element.offsetWidth+offsetLeft - event.clientX > element.offsetWidth-10){
+            else if (element.offsetWidth+offsetLeft - event.clientX > element.offsetWidth-this.pullWidth){
                 element.style.cursor = 'W-resize' 
             }
        
@@ -137,16 +156,12 @@ export class DataViewItem extends HTMLElement implements IObservable{
     }
 
 
-
-
-
-
-    private setOffset(current:dayjs.Dayjs, start:dayjs.Dayjs, end:dayjs.Dayjs){
+    setOffset(current:dayjs.Dayjs, start:dayjs.Dayjs, end:dayjs.Dayjs){
        
         return this.parentElement.getBoundingClientRect().width*(current.diff(start)/end.diff(start))
     }
 
-    private setLength(elementStart:dayjs.Dayjs,elementEnd:dayjs.Dayjs, start:dayjs.Dayjs, end:dayjs.Dayjs){
+    setLength(elementStart:dayjs.Dayjs,elementEnd:dayjs.Dayjs, start:dayjs.Dayjs, end:dayjs.Dayjs){
        
         return  Math.ceil(this.parentElement.getBoundingClientRect().width*elementEnd.diff(elementStart)/end.diff(start))
     }

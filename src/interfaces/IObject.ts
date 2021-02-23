@@ -32,6 +32,11 @@ export interface  ITableData{
     end : dayjs.Dayjs;
     id: string | number;
     content: { text: string; };
+    length:number;
+
+    move(delta:number):void;
+    changeLength(delta:number,start:boolean):void
+    
 }
 
 

@@ -36,7 +36,6 @@ export class MainView extends Observable {
         
         const hammerview = new Hammer(this.rootElement)
         hammerview.on('pan', (event)=> this.publish('pan',event))
-        // hammerview.on('pan', this.drag.bind(this))
         hammerview.on('panstart',(event)=> this.publish('panstart',event))
         hammerview.on('panend', (event)=> this.publish('panend',event))
         this.rootElement.onwheel = (event)=> this.publish('onwheel',event)

@@ -1,5 +1,6 @@
 import { CustomHTMLElement } from "customhtmlbase";
 import dayjs from "dayjs";
+import { stringify } from "node:querystring";
 import { ITableData } from "../../../interfaces/IObject";
 import { IObservable, Observable } from "../../../observer/Observable";
 import { IObserver } from "../../../observer/Observer";
@@ -32,7 +33,7 @@ export function setDefaultStyle(reusedComponent:HTMLElement){
     template:'<div>',
     useShadow:false,
     style:''})
-export class MormoDataView extends HTMLElement implements IObservable{
+export class MormoDataView extends HTMLElement implements IObservable, IObserver{
     // rootElement: HTMLElement;
     domItems: DomItems;
     styleFunc?: () => void;
@@ -53,6 +54,16 @@ export class MormoDataView extends HTMLElement implements IObservable{
         
     }
 
+
+
+
+
+
+
+    emit(keyword:string, data:any){
+        this.publish(keyword, data);
+    }
+
     subscribe(observer:IObserver){
         this.subscribers.push(observer)
     }
@@ -69,9 +80,7 @@ export class MormoDataView extends HTMLElement implements IObservable{
     }
 
 
-    render(elements:Array<ITableData>,start:dayjs.Dayjs,end:dayjs.Dayjs){
-        // console.log(elements.length)
-        
+    render(elements:Array<ITableData>,start:dayjs.Dayjs,end:dayjs.Dayjs) {
         this.domItems.clearLegend();
         
         elements.sort((a,b) => a.end.diff(b.end)).sort((a,b) => a.start.diff(b.start)).forEach(element => {
@@ -92,10 +101,7 @@ export class MormoDataView extends HTMLElement implements IObservable{
         if (!reusedComponent){
 
             reusedComponent = new DataViewItem(this) //FIXME THIS NEEDS TO BE DONE IN SOME BETTER WAY TO ENABLE EVENTS ON THESE OBJECTS TO PROPAGATE.
-            
-            // alternative idea is that the components dont act, but just serve as a reference for lookup in the model!
-            // reusedComponent = compoonent.HTML;
-            // this.rootElement.appendChild(reusedComponent)
+            reusedComponent.subscribe(this)
             setDefaultStyle(reusedComponent)
            
             
