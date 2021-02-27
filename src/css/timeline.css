@@ -1,6 +1,6 @@
-.mormo-time-element{
-    border-width:5px;
-    text-align:left;
+.mormo-time-element {
+    border-width: 5px;
+    text-align: left;
     border-style: none;
     border-left-style: solid;
     border-color: black;
@@ -12,10 +12,10 @@
             timeElement.style.borderLeftStyle = 'solid'
             timeElement.style.borderColor = 'Black' */
 }
-.mormo-timeline{
+.mormo-timeline {
     position: relative;
     width: fit-content;
 }
-.mormo-inner-container{
+.mormo-inner-container {
     position: relative;
 }

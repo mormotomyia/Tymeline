@@ -1,19 +1,15 @@
-import { Observer } from "../../observer/Observer";
-import { ContextMenuView } from "../view/miscView/ContextMenuView";
+import { Observer } from '../../observer/Observer';
+import { ContextMenuView } from '../view/miscView/ContextMenuView';
 
-export class ContextMenuControl extends Observer{
+export class ContextMenuControl extends Observer {
     contextMenuView: ContextMenuView;
 
-    constructor(rootElement:HTMLElement){
-        super()
+    constructor(rootElement: HTMLElement) {
+        super();
         this.contextMenuView = new ContextMenuView(rootElement);
         this.contextMenuView.subscribe(this);
-        window.addEventListener("click", (_:MouseEvent) => {
-            this.contextMenuView.toggleMenu("hide");
-          });
+        window.addEventListener('click', (_: MouseEvent) => {
+            this.contextMenuView.toggleMenu('hide');
+        });
     }
-
-    
-
-
 }

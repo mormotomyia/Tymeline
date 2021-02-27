@@ -1,28 +1,23 @@
-import { IDomItems } from "../../interfaces/IObject"
+import { IDomItems } from '../../interfaces/IObject';
 
-export class DomItems implements IDomItems{
-    
-    legendMajor: Array<HTMLElement>
+export class DomItems implements IDomItems {
+    legendMajor: Array<HTMLElement>;
     // legendMinor: Array<HTMLElement>
-    redundantLegendMajor:Array<HTMLElement>
+    redundantLegendMajor: Array<HTMLElement>;
     // redundantLegendMinor: Array<HTMLElement>
-    
-    constructor(){
-        
-       
-        this.legendMajor= []
+
+    constructor() {
+        this.legendMajor = [];
         // this.legendMinor = []
-        this.redundantLegendMajor= []
+        this.redundantLegendMajor = [];
         // this.redundantLegendMinor= []
     }
 
-
-    clearLegend():void{
+    clearLegend(): void {
         this.redundantLegendMajor = this.legendMajor;
         // this.redundantLegendMinor = this.legendMinor;
-  
-        this.legendMajor = []
+
+        this.legendMajor = [];
         // this.legendMinor = []
-       
     }
 }

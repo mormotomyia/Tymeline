@@ -1,127 +1,116 @@
+import dayjs from 'dayjs';
+import { ITableData } from '../../interfaces/IObject';
+import { IObserver, Observer } from '../../observer/Observer';
+import { TableData } from '../model/TableData';
+import { MormoDataView } from '../view/dataView/dataView';
+import { MainView } from '../view/mainView';
+import { TimelineView } from '../view/timeline/TimelineView';
+import { ContextMenuControl } from './ContextMenuControl';
+import { DataControl } from './DataControl';
+import { TimelineControl } from './TimelineControl';
 
-import dayjs from "dayjs";
-import { ITableData } from "../../interfaces/IObject";
-import { IObserver, Observer } from "../../observer/Observer";
-import { TableData } from "../model/TableData";
-import { MormoDataView } from "../view/dataView/dataView";
-import { MainView } from "../view/mainView";
-import { TimelineView } from "../view/timeline/TimelineView";
-import { ContextMenuControl } from "./ContextMenuControl";
-import { DataControl } from "./DataControl";
-import { TimelineControl } from "./TimelineControl";
-
-
-
-
-export class MainControl implements IObserver{
+export class MainControl implements IObserver {
     mainView: MainView;
     timelineControl: TimelineControl;
     dataControl: DataControl;
-    counter = 0
-    deltaX = 0
+    counter = 0;
+    deltaX = 0;
     contextMenuControl: ContextMenuControl;
     draggable = true;
-    
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    constructor(root:HTMLElement, options:Object){
-        const dataOptions = {}
-        const timelineOptions = { ...options,start:dayjs().subtract(7,"day"), end:dayjs().add(7,"day")}
+    constructor(root: HTMLElement, options: Object) {
+        const dataOptions = {};
+        const timelineOptions = {
+            ...options,
+            start: dayjs().subtract(7, 'day'),
+            end: dayjs().add(7, 'day'),
+        };
 
-        
-
-        this.mainView =  new MainView(root,options);
-        this.mainView.subscribe(this)
+        this.mainView = new MainView(root, options);
+        this.mainView.subscribe(this);
 
         // this needs to be moved to the respective control points?
-        
-        this.timelineControl = new TimelineControl(this.mainView.timeContainer,timelineOptions);
-        this.dataControl = new DataControl(this.mainView.rootElement)
-        this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement)
-        
-        this.dataControl.subscribe(this)
 
-        
+        this.timelineControl = new TimelineControl(
+            this.mainView.timeContainer,
+            timelineOptions
+        );
+        this.dataControl = new DataControl(this.mainView.rootElement);
+        this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement);
+
+        this.dataControl.subscribe(this);
+
         // this.addEvents()
     }
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    emit(keyword:string, data:HammerInput|Event):void{
+    emit(keyword: string, data: HammerInput | Event): void {
         // console.log(keyword)
 
         switch (keyword) {
-            case "panstartitem":
-                console.log('here!')
-                this.draggable = false
+            case 'panstartitem':
+                console.log('here!');
+                this.draggable = false;
                 break;
-            case "panitem":
+            case 'panitem':
                 break;
-            case "panenditem":
-                console.log('here?')
-                this.draggable = true
+            case 'panenditem':
+                console.log('here?');
+                this.draggable = true;
                 break;
-            case "pan":
-                if(this.draggable) this.drag(<HammerInput>data)
+            case 'pan':
+                if (this.draggable) this.drag(<HammerInput>data);
                 break;
-            case "panstart":
-                if(this.draggable) this.dragStart(<HammerInput>data)
+            case 'panstart':
+                if (this.draggable) this.dragStart(<HammerInput>data);
                 break;
-            case "panend":
-                if(this.draggable) this.dragEnd(<HammerInput>data)
+            case 'panend':
+                if (this.draggable) this.dragEnd(<HammerInput>data);
                 break;
-            case "onwheel":
-                this.changeZoom(<WheelEvent>data)
+            case 'onwheel':
+                this.changeZoom(<WheelEvent>data);
                 break;
             default:
                 break;
         }
     }
 
-
-
-
-    dragStart(event:HammerInput){
-        console.log(event.isFirst)
+    dragStart(event: HammerInput) {
+        console.log(event.isFirst);
         this.deltaX = 0;
     }
 
-    dragEnd(_:any) {
-        
-    }
+    dragEnd(_: any) {}
 
-
-    drag(event:HammerInput){
+    drag(event: HammerInput) {
         // console.log(event.isFirst)
 
         // console.log(event.srcEvent)
-        const target = <HTMLElement>event.srcEvent.target
+        const target = <HTMLElement>event.srcEvent.target;
         // console.log(target.tagName)
-        if (event.srcEvent.target.classList.contains('mormo-items')){
+        if (event.srcEvent.target.classList.contains('mormo-items')) {
             let deltaX = event.deltaX;
             deltaX -= this.deltaX;
-            this.timelineControl.updateScale('linear',-deltaX *this.timelineControl.timeframe/(1000*1000)*0.7)
+            this.timelineControl.updateScale(
+                'linear',
+                ((-deltaX * this.timelineControl.timeframe) / (1000 * 1000)) * 0.7
+            );
             // this.timeline.updateScale('linear',move *this.timeline.timeframe/(1000*1000)*10)
-            this.render()
+            this.render();
             this.deltaX += deltaX;
         }
     }
 
-    
-
-    changeZoom(event:WheelEvent){
+    changeZoom(event: WheelEvent) {
         event.preventDefault();
-        this.timelineControl.updateScale('zoom',event.deltaY,event.offsetX)
-        this.render() 
+        this.timelineControl.updateScale('zoom', event.deltaY, event.offsetX);
+        this.render();
     }
 
-    render(){
+    render() {
         this.mainView.render();
         this.timelineControl.render();
-        this.dataControl.render(this.timelineControl.start,this.timelineControl.end);
+        this.dataControl.render(this.timelineControl.start, this.timelineControl.end);
     }
-
-
-
-
-
 }
