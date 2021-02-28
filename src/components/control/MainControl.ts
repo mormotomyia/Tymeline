@@ -5,18 +5,23 @@ import { TableData } from '../model/TableData';
 import { MormoDataView } from '../view/dataView/dataView';
 import { MainView } from '../view/mainView';
 import { TimelineView } from '../view/timeline/TimelineView';
+import { TimeStep } from '../view/timeline/TimeStep';
 import { ContextMenuControl } from './ContextMenuControl';
 import { DataControl } from './DataControl';
 import { TimelineControl } from './TimelineControl';
+
+export interface ISharedState {
+    timestep: TimeStep;
+}
 
 export class MainControl implements IObserver {
     mainView: MainView;
     timelineControl: TimelineControl;
     dataControl: DataControl;
-    counter = 0;
-    deltaX = 0;
     contextMenuControl: ContextMenuControl;
+    deltaX = 0;
     draggable = true;
+    sharedState: ISharedState;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     constructor(root: HTMLElement, options: Object) {
@@ -27,27 +32,26 @@ export class MainControl implements IObserver {
             end: dayjs().add(7, 'day'),
         };
 
+        this.sharedState = { timestep: new TimeStep(dayjs(), dayjs(), 1) };
+
         this.mainView = new MainView(root, options);
         this.mainView.subscribe(this);
 
         // this needs to be moved to the respective control points?
 
         this.timelineControl = new TimelineControl(
-            this.mainView.timeContainer,
+            this.mainView.rootElement,
+            this.sharedState,
             timelineOptions
         );
-        this.dataControl = new DataControl(this.mainView.rootElement);
+        this.dataControl = new DataControl(this.mainView.rootElement, this.sharedState);
         this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement);
 
         this.dataControl.subscribe(this);
-
-        // this.addEvents()
+        // this.timelineControl
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
     emit(keyword: string, data: HammerInput | Event): void {
-        // console.log(keyword)
-
         switch (keyword) {
             case 'panstartitem':
                 console.log('here!');
@@ -84,12 +88,8 @@ export class MainControl implements IObserver {
     dragEnd(_: any) {}
 
     drag(event: HammerInput) {
-        // console.log(event.isFirst)
-
-        // console.log(event.srcEvent)
         const target = <HTMLElement>event.srcEvent.target;
-        // console.log(target.tagName)
-        if (event.srcEvent.target.classList.contains('mormo-items')) {
+        if (target.classList.contains('mormo-items')) {
             let deltaX = event.deltaX;
             deltaX -= this.deltaX;
             this.timelineControl.updateScale(

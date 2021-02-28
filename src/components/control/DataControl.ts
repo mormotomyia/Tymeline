@@ -11,6 +11,9 @@ import { IObservable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
 import { DataViewItem } from '../view/dataView/dataViewItem';
 import { off } from 'hammerjs';
+import { snap } from '../../util/snap';
+import { ISharedState } from './MainControl';
+import TimeStep from '../view/timeline/TimeStep';
 
 export interface DraggedItem {
     dom: DataViewItem;
@@ -29,8 +32,12 @@ export class DataControl implements IObservable, IObserver {
 
     start: dayjs.Dayjs = dayjs();
     end: dayjs.Dayjs = dayjs();
+    sharedState: ISharedState;
+    timestep: TimeStep;
 
-    constructor(rootElement: HTMLElement) {
+    constructor(rootElement: HTMLElement, sharedState: ISharedState) {
+        this.sharedState = sharedState;
+        this.timestep = this.sharedState.timestep;
         this.dataView = new MormoDataView(rootElement);
         this.dataView.subscribe(this);
     }
@@ -45,12 +52,15 @@ export class DataControl implements IObservable, IObserver {
     public emit(keyword: string, data: any) {
         this.publish(keyword, data);
         switch (keyword) {
-            case 'select':
-                this.addSelection(<HammerInput>data);
+            case 'onSelect':
+                this.onSelect(<HammerInput>data);
                 break;
-            case 'unselect':
-                this.removeSelection(<HammerInput>data);
-                break;
+            // case 'select':
+            //     this.addSelection(<HammerInput>data);
+            //     break;
+            // case 'unselect':
+            //     this.removeSelection(<HammerInput>data);
+            //     break;
             case 'panstartitem':
                 this.dragItemStart(<HammerInput>data);
                 break;
@@ -63,14 +73,23 @@ export class DataControl implements IObservable, IObserver {
         }
     }
 
-    addSelection(event: HammerInput) {
-        const data = this.tableData.get(event.target.id)!;
-        this.selected.set(event.target.id, {
-            dom: <DataViewItem>event.target,
-            data: data,
-            tempStart: data.start,
-            tempEnd: data.end,
-        });
+    onSelect(event: HammerInput) {
+        const data = <TableData>this.tableData.get(event.target.id);
+        console.log(data);
+        const target = <DataViewItem>event.srcEvent.target;
+        if (this.selected.has(event.target.id)) {
+            // pass
+            target.unselect();
+            this.selected.delete(event.target.id);
+        } else {
+            this.selected.set(event.target.id, {
+                dom: <DataViewItem>event.target,
+                data: data,
+                tempStart: data.start,
+                tempEnd: data.end,
+            });
+            target.select();
+        }
     }
     removeSelection(event: HammerInput) {
         this.selected.delete(event.target.id);
@@ -107,9 +126,18 @@ export class DataControl implements IObservable, IObserver {
             ) {
                 value.tempStart = value.tempStart.add(delta, 'second');
                 value.tempEnd = value.tempEnd.add(delta, 'second');
-                value.dom.updateTime(
+
+                const snappedStart = snap(
                     value.tempStart,
-                    value.tempEnd,
+                    this.timestep.scale,
+                    this.timestep.step
+                );
+
+                const offset = value.data.start.diff(snappedStart, 'seconds');
+                console.log(offset);
+                value.dom.updateTime(
+                    snappedStart,
+                    snappedStart.add(value.data.length, 'second'),
                     this.start,
                     this.end
                 );
@@ -125,9 +153,33 @@ export class DataControl implements IObservable, IObserver {
                 (event.target.style.cursor === 'grab' ||
                     event.target.style.cursor === 'grabbing')
             ) {
-                const offset = value.tempStart.diff(value.data.start, 'seconds');
-                value.data?.move(offset);
+                const snappedStart = snap(
+                    value.tempStart,
+                    this.timestep.scale,
+                    this.timestep.step
+                );
+
+                const offset = value.data.start.diff(snappedStart, 'seconds');
+                console.log(offset);
+                value.dom.updateTime(
+                    snappedStart,
+                    snappedStart.add(value.data.length, 'second'),
+                    this.start,
+                    this.end
+                );
+
+                // const offset = value.tempStart.diff(value.data.start, 'seconds');
+                value.data?.move(-offset);
+                console.log(snappedStart.format());
+                console.log(value.data.start.format());
+                value.tempStart = value.data.start;
+                value.tempEnd = value.data.end;
             }
+
+            // console.log(this.timestep.scale);
+            // console.log(this.timestep.step);
+            // console.log(value.data.start.format());
+
             this.publish('changed', this.draggedItem);
         });
         this.selected.forEach((value: DraggedItem) => {
@@ -227,7 +279,7 @@ export class DataControl implements IObservable, IObserver {
 
     render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
         const elements: Array<ITableData> = this.getVisibleElements(start, end);
-        this.dataView.render(elements, start, end);
+        this.dataView.render(elements, this.selected, start, end);
     }
 
     private getVisibleElements(start: dayjs.Dayjs, end: dayjs.Dayjs): Array<ITableData> {

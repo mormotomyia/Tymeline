@@ -7,6 +7,8 @@ export class ContextMenuControl extends Observer {
     constructor(rootElement: HTMLElement) {
         super();
         this.contextMenuView = new ContextMenuView(rootElement);
+
+        this.contextMenuView.createContextMenu();
         this.contextMenuView.subscribe(this);
         window.addEventListener('click', (_: MouseEvent) => {
             this.contextMenuView.toggleMenu('hide');

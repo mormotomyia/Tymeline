@@ -1,22 +1,35 @@
 import dayjs from 'dayjs';
 import { TimelineView } from '../view/timeline/TimelineView';
+import TimeStep from '../view/timeline/TimeStep';
+import { ISharedState } from './MainControl';
 
 export class TimelineControl {
     start: dayjs.Dayjs;
     end: dayjs.Dayjs;
 
     timelineView: TimelineView;
+    timestep: TimeStep;
+    sharedState: ISharedState;
 
     constructor(
         rootElement: HTMLElement,
+        sharedState: ISharedState,
         options: { start: dayjs.Dayjs; end: dayjs.Dayjs }
     ) {
-        this.timelineView = new TimelineView(rootElement);
+        this.sharedState = sharedState;
+        this.timestep = this.sharedState.timestep;
+        // this.timestep = new TimeStep(dayjs(), dayjs(), 1); // this may not be the optimal default value, please verify if this is ever accessable, even only by accident
+        const arg = document.createElement('div');
+        const timelineView = new TimelineView(arg, this.timestep);
+        rootElement.appendChild(timelineView);
+        console.log(timelineView);
+
         this.start = options.start;
         this.end = options.end;
 
-        this.timelineView.rootElement.oncontextmenu = (event: Event) =>
-            event.preventDefault();
+        timelineView.render(this.start, this.end);
+
+        this.timelineView.oncontextmenu = (event: Event) => event.preventDefault();
     }
 
     get timeframe() {
@@ -52,12 +65,11 @@ export class TimelineControl {
                 break;
             case 'zoom':
                 // zoom in = negative!
-                console.log(this.timelineView.rootElement.getBoundingClientRect().width);
+                console.log(this.timelineView.getBoundingClientRect().width);
                 if (a !== undefined && b !== undefined) {
                     const zoom = this.timeframe / (1000 * 10);
                     const factor =
-                        <number>b /
-                        this.timelineView.rootElement.getBoundingClientRect().width;
+                        <number>b / this.timelineView.getBoundingClientRect().width;
                     a = a > 0 ? 1 : -1;
                     this.start = this.start.add(-a * zoom * factor, 'second');
 

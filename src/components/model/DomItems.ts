@@ -13,7 +13,7 @@ export class DomItems implements IDomItems {
         // this.redundantLegendMinor= []
     }
 
-    clearLegend(): void {
+    clear(): void {
         this.redundantLegendMajor = this.legendMajor;
         // this.redundantLegendMinor = this.legendMinor;
 

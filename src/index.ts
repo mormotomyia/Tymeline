@@ -20,7 +20,7 @@ bg.setTable([
     {
         id: 2,
         length: 543 * 3600,
-        content: { text: '1' },
+        content: { text: '2' },
         start: dayjs().subtract(2, 'day'),
         canChangeLength: false,
         canMove: true,
@@ -28,7 +28,7 @@ bg.setTable([
     {
         id: 3,
         length: 334 * 3600,
-        content: { text: '2' },
+        content: { text: '3' },
         start: dayjs().subtract(47, 'hour'),
         canChangeLength: false,
         canMove: false,
@@ -36,7 +36,7 @@ bg.setTable([
     {
         id: 4,
         length: 243 * 3600,
-        content: { text: '3' },
+        content: { text: '4' },
         start: dayjs().subtract(123, 'hour'),
         canChangeLength: true,
         canMove: true,
@@ -44,7 +44,7 @@ bg.setTable([
     {
         id: 5,
         length: 234 * 3600,
-        content: { text: '4' },
+        content: { text: '5' },
         start: dayjs().subtract(52, 'hour'),
         canChangeLength: true,
         canMove: false,
@@ -52,11 +52,15 @@ bg.setTable([
     {
         id: 6,
         length: 26 * 3600,
-        content: { text: '5' },
+        content: { text: '6' },
         start: dayjs().subtract(54, 'hour'),
         canChangeLength: true,
         canMove: true,
     },
 ]);
 
+let now = dayjs();
+console.log(now.format());
+now.second(0);
+console.log(now.format());
 // bg.updateTable({1:{length:3600*48,content:{text:'asdff'},start:0},2:{length:500*3600,content:{text:'asdf'},start:5}})

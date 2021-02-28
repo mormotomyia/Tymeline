@@ -4,6 +4,7 @@ import { stringify } from 'node:querystring';
 import { ITableData } from '../../../interfaces/IObject';
 import { IObservable, Observable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
+import { DraggedItem } from '../../control/DataControl';
 import { CustomButton } from '../../custom-components/customButton';
 import { DomItems } from '../../model/DomItems';
 import { TableData } from '../../model/TableData';
@@ -66,14 +67,19 @@ export class MormoDataView extends HTMLElement implements IObservable, IObserver
         });
     }
 
-    render(elements: Array<ITableData>, start: dayjs.Dayjs, end: dayjs.Dayjs) {
-        this.domItems.clearLegend();
+    render(
+        elements: Array<ITableData>,
+        selected: Map<string, DraggedItem>,
+        start: dayjs.Dayjs,
+        end: dayjs.Dayjs
+    ) {
+        this.domItems.clear();
 
         elements
             .sort((a, b) => a.end.diff(b.end))
             .sort((a, b) => a.start.diff(b.start))
             .forEach((element) => {
-                this.reuseDomComponent(element, start, end);
+                this.reuseDomComponent(element, selected, start, end);
             });
         this.domItems.redundantLegendMajor.forEach((element) => {
             element.parentNode?.removeChild(element);
@@ -81,16 +87,27 @@ export class MormoDataView extends HTMLElement implements IObservable, IObserver
         this.domItems.redundantLegendMajor = [];
     }
 
-    reuseDomComponent(element: ITableData, start: dayjs.Dayjs, end: dayjs.Dayjs) {
+    reuseDomComponent(
+        element: ITableData,
+        selected: Map<string, DraggedItem>,
+        start: dayjs.Dayjs,
+        end: dayjs.Dayjs
+    ) {
         let reusedComponent: DataViewItem;
         reusedComponent = <DataViewItem>this.domItems.redundantLegendMajor.shift();
         if (!reusedComponent) {
             reusedComponent = new DataViewItem(this); //FIXME THIS NEEDS TO BE DONE IN SOME BETTER WAY TO ENABLE EVENTS ON THESE OBJECTS TO PROPAGATE.
             reusedComponent.subscribe(this);
             setDefaultStyle(reusedComponent);
+        } else {
+            reusedComponent.unselect();
+            // reusedComponent.clean();
         }
-        reusedComponent.update(element, start, end);
 
+        reusedComponent.update(element, start, end);
+        if (selected.has(element.id)) {
+            reusedComponent.select();
+        }
         // reusedComponent.style.boxShadow = '5px 5px 5px grey;'
         this.domItems.legendMajor.push(reusedComponent);
     }

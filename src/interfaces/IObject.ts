@@ -29,7 +29,7 @@ export interface ITableData {
     canChangeLength: boolean;
     start: dayjs.Dayjs;
     end: dayjs.Dayjs;
-    id: string | number;
+    id: string;
     content: { text: string };
     length: number;
 

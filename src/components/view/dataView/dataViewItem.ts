@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { ITableData } from '../../../interfaces/IObject';
 import { IObservable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
+import { timeStamp } from 'node:console';
 
 enum ChangeType {
     move = 1,
@@ -103,24 +104,31 @@ export class DataViewItem extends HTMLElement implements IObservable {
         return this;
     }
 
-    select(event: HammerInput) {
-        this.onSelect(event);
+    select() {
+        this.selected = true;
+        this.style.borderStyle = 'solid';
+        this.publish('select', null);
+    }
+
+    unselect() {
+        this.selected = false;
+        this.style.borderStyle = 'hidden';
+        this.publish('unselect', null);
     }
 
     private onSelect(event: HammerInput) {
         console.log('onSelect');
-        this.selected = !this.selected;
-        if (this.selected) {
-            this.style.borderStyle = 'solid';
-            this.publish('select', event);
-        } else {
-            this.style.borderStyle = 'hidden';
-            this.publish('unselect', event);
-        }
+        this.publish('onSelect', event);
+        // this.selected = !this.selected;
+        // if (this.selected) {
+        //     this.style.borderStyle = 'solid';
+        //     this.publish('select', event);
+        // } else {
+        //     this.style.borderStyle = 'hidden';
+        //     this.publish('unselect', event);
+        // }
         // this.style.borderStyle === 'solid'? this.style.borderStyle = 'hidden':this.style.borderStyle = 'solid'
     }
-
-    changeMouseOnMove() {}
 
     private changeMouseOnEdgeLeftRight(event: MouseEvent) {
         const element = <HTMLElement>event.target;
