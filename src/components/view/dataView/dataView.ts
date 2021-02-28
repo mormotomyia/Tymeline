@@ -1,4 +1,4 @@
-import { CustomHTMLElement } from 'customhtmlbase';
+import { CustomHTMLElement, CustomNoTemplateHTMLElement } from 'customhtmlbase';
 import dayjs from 'dayjs';
 import { stringify } from 'node:querystring';
 import { ITableData } from '../../../interfaces/IObject';
@@ -10,26 +10,12 @@ import { DomItems } from '../../model/DomItems';
 import { TableData } from '../../model/TableData';
 import { DataViewItem } from './dataViewItem';
 
-export function setDefaultStyle(reusedComponent: HTMLElement) {
-    // reusedComponent.style.border ='solid'
-    // reusedComponent.style.borderColor ='yellow'
-
-    reusedComponent.style.margin = '5px 2px';
-    reusedComponent.style.minHeight = '25px';
-    reusedComponent.style.maxHeight = '50px';
-    reusedComponent.style.backgroundColor = 'rgba(240,240,240,0.9)';
-    reusedComponent.style.color = 'rgb(55,55,55)';
-    reusedComponent.style.boxShadow = '2px 2px 2px rgb(55,55,55)';
-}
-
-@CustomHTMLElement({
+@CustomNoTemplateHTMLElement({
     selector: 'data-view',
-    template: '<div>',
     useShadow: false,
-    style: '',
 })
 export class MormoDataView extends HTMLElement implements IObservable, IObserver {
-    // rootElement: HTMLElement;
+    rows: Array<Array<DataViewItem>> = [[]];
     domItems: DomItems;
     styleFunc?: () => void;
     subscribers: Array<IObserver> = [];
@@ -67,21 +53,61 @@ export class MormoDataView extends HTMLElement implements IObservable, IObserver
         });
     }
 
+    buildLayers(reusedComponent: DataViewItem) {
+        const res = this.rows.some((row: Array<DataViewItem>) => {
+            if (
+                row.every((value: DataViewItem) => {
+                    return value.notOverlap(reusedComponent);
+                })
+            ) {
+                row.push(reusedComponent);
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        if (!res) {
+            this.rows.push([]);
+            this.buildLayers(reusedComponent);
+            // console.log(reusedComponent.id);
+        }
+    }
+
     render(
         elements: Array<ITableData>,
         selected: Map<string, DraggedItem>,
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ) {
+        const heightlevels = 45;
+
+        // console.trace('rendering data');
         this.domItems.clear();
 
-        elements
-            .sort((a, b) => a.end.diff(b.end))
-            .sort((a, b) => a.start.diff(b.start))
-            .forEach((element) => {
-                this.reuseDomComponent(element, selected, start, end);
+        this.rows = [[]];
+        elements.forEach((element) => {
+            const reusedComponent = this.reuseDomComponent(element, selected, start, end);
+            this.buildLayers(reusedComponent);
+        });
+        this.rows.forEach((row: Array<DataViewItem>, index) => {
+            // console.log(index);
+            row.forEach((element) => {
+                // console.log(element);
+                // console.log(index);
+                element.style.top = `${index * 40 + 5}px`;
             });
-        this.domItems.redundantLegendMajor.forEach((element) => {
+        });
+
+        // console.log(this.rows);
+
+        // this.domItems.legendMajor.forEach((element: DataViewItem) => {
+        //     console.log(elements.find((item) => item.id === element.id));
+
+        // });
+
+        this.domItems.redundantLegendMajor.forEach((element: DataViewItem) => {
+            element.unsubscribeAll();
             element.parentNode?.removeChild(element);
         });
         this.domItems.redundantLegendMajor = [];
@@ -96,19 +122,19 @@ export class MormoDataView extends HTMLElement implements IObservable, IObserver
         let reusedComponent: DataViewItem;
         reusedComponent = <DataViewItem>this.domItems.redundantLegendMajor.shift();
         if (!reusedComponent) {
-            reusedComponent = new DataViewItem(this); //FIXME THIS NEEDS TO BE DONE IN SOME BETTER WAY TO ENABLE EVENTS ON THESE OBJECTS TO PROPAGATE.
+            reusedComponent = new DataViewItem();
+            this.appendChild(reusedComponent);
             reusedComponent.subscribe(this);
-            setDefaultStyle(reusedComponent);
+            // setDefaultStyle(reusedComponent);
         } else {
             reusedComponent.unselect();
-            // reusedComponent.clean();
         }
 
         reusedComponent.update(element, start, end);
         if (selected.has(element.id)) {
             reusedComponent.select();
         }
-        // reusedComponent.style.boxShadow = '5px 5px 5px grey;'
         this.domItems.legendMajor.push(reusedComponent);
+        return reusedComponent;
     }
 }

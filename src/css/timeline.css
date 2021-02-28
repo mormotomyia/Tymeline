@@ -15,6 +15,7 @@
 .mormo-timeline {
     position: relative;
     width: fit-content;
+    overflow: hidden auto;
 }
 .mormo-inner-container {
     position: relative;

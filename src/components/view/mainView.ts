@@ -11,13 +11,8 @@ export class MainView extends HTMLElement implements IObservable {
     subscribers: Array<IObserver> = [];
     constructor(root: HTMLElement, tableOptions?: any) {
         super();
-        // if (root.nodeName !== 'DIV') {
-        //     const basediv = document.createElement('div');
-        //     root.appendChild(basediv);
-        //     root = basediv;
-        // }
+
         root.appendChild(this);
-        // this.rootElement = root;
         this.styleItem(tableOptions);
 
         this.addEvents();
@@ -42,6 +37,7 @@ export class MainView extends HTMLElement implements IObservable {
         // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
 
         const hammerview = new Hammer(this);
+        hammerview.on('tap', (event) => this.publish('tap', event));
         hammerview.on('pan', (event) => this.publish('pan', event));
         hammerview.on('panstart', (event) => this.publish('panstart', event));
         hammerview.on('panend', (event) => this.publish('panend', event));
@@ -51,19 +47,6 @@ export class MainView extends HTMLElement implements IObservable {
     private styleItem(tableOptions?: any) {
         this.classList.add('mormo-timeline');
         this.style.display = 'block';
-        // this.timeContainer.style.position = 'absolute';
-        // this.timeContainer.style.bottom = '0';
-        // this.timeContainer.style.left = '0';
-        // this.timeContainer.style.height = '50px';
-        // this.timeContainer.style.width =
-        //     '-moz-available'; /* WebKit-based browsers will ignore this. */
-        // this.timeContainer.style.width =
-        //     '-webkit-fill-available'; /* Mozilla-based browsers will ignore this. */
-        // this.timeContainer.style.width = 'fill-available';
-        // this.timeContainer.style.border = 'solid';
-        // this.timeContainer.style.borderWidth = 'thin';
-        // this.timeContainer.style.borderTopWidth = 'thick';
-        // this.timeContainer.style.overflow = 'hidden';
 
         if (tableOptions) {
             this.style.width = `${tableOptions.size.width}px`;

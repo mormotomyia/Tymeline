@@ -13,12 +13,13 @@ export class ContextMenuControl implements IObserver {
 
         this.contextMenuView.createContextMenu();
         this.contextMenuView.subscribe(this);
-        window.addEventListener('click', (event: MouseEvent) => {
-            console.log(event.target.parentElement);
-            if (event.target.parentElement.tagName !== 'CONTEXTMENU-VIEW') {
-                this.contextMenuView.toggleMenu('hide');
-            }
-        });
+
+        // window.addEventListener('click', (event: MouseEvent) => {
+        //     console.log('asd');
+        //     if (event.target.parentElement.tagName !== 'CONTEXTMENU-VIEW') {
+        //         this.contextMenuView.toggleMenu('hide');
+        //     }
+        // });
     }
     emit(keyword: string, event: any) {
         switch (keyword) {
@@ -29,6 +30,7 @@ export class ContextMenuControl implements IObserver {
                     this.menuLocation = event.target;
                     this.contextMenuView.setMenu(event.pageX - 5, event.pageY - 5);
                     this.contextMenuView.toggleMenu('show');
+                    this.contextMenuView.hideDialog();
                 }
                 break;
             case 'tapInfo':
@@ -51,6 +53,10 @@ export class ContextMenuControl implements IObserver {
             default:
                 break;
         }
+    }
+
+    toggleMenu(keyword: string) {
+        this.contextMenuView.toggleMenu(keyword);
     }
 
     // info.onclick = () => {

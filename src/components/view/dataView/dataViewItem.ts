@@ -1,4 +1,4 @@
-import { CustomHTMLElement } from 'customhtmlbase';
+import { CustomHTMLElement, CustomNoTemplateHTMLElement } from 'customhtmlbase';
 import { TableData } from '../../model/TableData';
 import dayjs from 'dayjs';
 import { ITableData } from '../../../interfaces/IObject';
@@ -12,11 +12,9 @@ enum ChangeType {
     idle = 3,
 }
 
-@CustomHTMLElement({
+@CustomNoTemplateHTMLElement({
     selector: 'data-view-item',
-    template: '<div class=content></div>',
     useShadow: false,
-    style: '',
 })
 export class DataViewItem extends HTMLElement implements IObservable {
     content: HTMLDivElement;
@@ -29,10 +27,20 @@ export class DataViewItem extends HTMLElement implements IObservable {
 
     private subscribers: Array<IObserver> = [];
 
-    constructor(rootElement: HTMLElement) {
+    constructor() {
         super();
-        rootElement.appendChild(this);
-        this.changeType = ChangeType.idle;
+
+        // rootElement.appendChild(this);
+        this.className = 'mormo-element';
+
+        this.hammerview = new Hammer(this);
+        // this.hammerview.on('pan',(event) => console.log(event))
+
+        this.hammerview.on('tap', this.onSelect.bind(this));
+        this.hammerview.on('panstart', (event) => this.publish('panstartitem', event));
+        this.hammerview.on('pan', (event) => this.publish('panitem', event));
+        this.hammerview.on('panend', (event) => this.publish('panenditem', event));
+
         //  TODO this needs some way to distinguish between "extending the time" aka making some element longer
         // and "changing the time" aka moving the element around with fixed length.
         // there needs to be a way to support either an both at the same time
@@ -42,23 +50,35 @@ export class DataViewItem extends HTMLElement implements IObservable {
         // where do I even fire them to?!
         // this does need some more thought! (as of right now this is just a builder class which is reusable but also not well defined)
 
-        this.style.display = 'block';
-
-        this.content = <HTMLDivElement>this.getElementsByClassName('content')[0];
+        // this.changeType = ChangeType.idle;
+        this.content = document.createElement('div');
+        this.appendChild(this.content);
+        // this.content = <HTMLDivElement>this.getElementsByClassName('content')[0];
         this.content.style.userSelect = 'none';
 
         this.content.style.pointerEvents = 'none';
-        this.className = 'mormo-element';
-        this.hammerview = new Hammer(this);
-        // this.hammerview.on('pan',(event) => console.log(event))
-
-        this.hammerview.on('tap', this.onSelect.bind(this));
-        this.hammerview.on('panstart', (event) => this.publish('panstartitem', event));
-        this.hammerview.on('pan', (event) => this.publish('panitem', event));
-        this.hammerview.on('panend', (event) => this.publish('panenditem', event));
 
         this.onmousemove = this.changeMouseOnEdgeLeftRight;
         // this.onmouseleave = () => {console.log('LEAVE');this.changeType = null;}
+    }
+
+    public overlap(other: DataViewItem): boolean {
+        // assert other right before our left
+        if (this === other) {
+            return false;
+        }
+        if (
+            this.getBoundingClientRect().left > other.getBoundingClientRect().right ||
+            this.getBoundingClientRect().right < other.getBoundingClientRect().left
+        ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    notOverlap(other: DataViewItem) {
+        return !this.overlap(other);
     }
 
     public update(element: ITableData, start: dayjs.Dayjs, end: dayjs.Dayjs) {
@@ -87,13 +107,18 @@ export class DataViewItem extends HTMLElement implements IObservable {
     public subscribe(observer: IObserver) {
         //we could check to see if it is already subscribed
         this.subscribers.push(observer);
-        console.log(`${observer} "has been subscribed`);
+        // console.log(`${observer} has been subscribed`);
     }
     public unsubscribe(observer: IObserver) {
         this.subscribers = this.subscribers.filter((el) => {
             return el !== observer;
         });
     }
+
+    public unsubscribeAll() {
+        this.subscribers = [];
+    }
+
     public publish(keyword: string, data: any) {
         this.subscribers.forEach((subscriber) => {
             subscriber.emit(keyword, data);
@@ -119,15 +144,6 @@ export class DataViewItem extends HTMLElement implements IObservable {
     private onSelect(event: HammerInput) {
         console.log('onSelect');
         this.publish('onSelect', event);
-        // this.selected = !this.selected;
-        // if (this.selected) {
-        //     this.style.borderStyle = 'solid';
-        //     this.publish('select', event);
-        // } else {
-        //     this.style.borderStyle = 'hidden';
-        //     this.publish('unselect', event);
-        // }
-        // this.style.borderStyle === 'solid'? this.style.borderStyle = 'hidden':this.style.borderStyle = 'solid'
     }
 
     private changeMouseOnEdgeLeftRight(event: MouseEvent) {
@@ -149,7 +165,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
                     element.offsetWidth + offsetLeft - event.clientX >
                     element.offsetWidth - this.pullWidth
                 ) {
-                    element.style.cursor = 'W-resize';
+                    element.style.cursor = 'w-resize';
                 }
             }
         }

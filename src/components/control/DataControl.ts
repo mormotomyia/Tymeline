@@ -89,9 +89,12 @@ export class DataControl implements IObservable, IObserver {
             });
             target.select();
         }
+        console.log(`selected ${event.target.id}`);
+        console.log(this.selected);
     }
-    removeSelection(event: HammerInput) {
-        this.selected.delete(event.target.id);
+    removeSelection() {
+        this.selected.forEach((value) => value.dom.unselect());
+        this.selected.clear();
     }
 
     dragItemStart(event: HammerInput) {
@@ -101,9 +104,11 @@ export class DataControl implements IObservable, IObserver {
             event.target.select(event);
         }
         console.log('GRABBING');
-        this.selected.forEach((value: DraggedItem) => {
-            value.dom.style.cursor = 'grabbing';
-        });
+        // if (event.target.style.cursor === 'grab') {
+        // this.selected.forEach((value: DraggedItem) => {
+        //     value.dom.style.cursor = 'grabbing';
+        // });
+        // }
         // event.target.style.cursor = 'grabbing'
 
         // this.draggedItem = {dom:<DataViewItem>event.target,data: this.tableData.get(event.target.id)}
@@ -115,35 +120,96 @@ export class DataControl implements IObservable, IObserver {
         let deltaX = event.deltaX;
         deltaX -= this.deltaX;
         // console.log(deltaX)
+
+        // console.log(event.target.style.cursor);
         const delta = ((deltaX * this.timeframe) / (1000 * 1000)) * 0.7; // this is the total offset time!
-        this.selected.forEach((value: DraggedItem) => {
-            if (
-                value.data?.canMove &&
-                (event.target.style.cursor === 'grab' ||
-                    event.target.style.cursor === 'grabbing')
-            ) {
-                value.tempStart = value.tempStart.add(delta, 'second');
-                value.tempEnd = value.tempEnd.add(delta, 'second');
 
-                const snappedStart = snap(
-                    value.tempStart,
-                    this.timestep.scale,
-                    this.timestep.step
-                );
+        switch (event.target.style.cursor) {
+            case 'grab':
+                // console.log('a');
+                this.move(delta);
+                break;
+            case 'grabbing':
+                // console.log('a');
+                this.move(delta);
+                break;
+            case 'e-resize':
+                // console.log('a');
+                this.resizeRight(delta);
+                break;
+            case 'w-resize':
+                // console.log('a');
+                this.resizeLeft(delta);
+                break;
+            default:
+                break;
+        }
+        // if (
+        //     event.target.style.cursor === 'grab' ||
+        //     event.target.style.cursor === 'grabbing'
+        // ) {
+        //     // console.log('DRAAG');
+        //     this.move(delta);
+        //     // Array.from(this.selected.values())
+        //     //     .filter((value) => value.data?.canMove)
+        //     //     .forEach((value) => this.moveItem(value, delta));
+        // } else if (event.target.style.cursor === 'e-resize') {
+        //     this.resizeRight(delta);
 
-                const offset = value.data.start.diff(snappedStart, 'seconds');
-                console.log(offset);
-                value.dom.updateTime(
-                    snappedStart,
-                    snappedStart.add(value.data.length, 'second'),
-                    this.start,
-                    this.end
-                );
-            } else {
-                console.log('aaahhhh');
-            }
-        });
+        //     // right?
+        // } else if (event.target.style.cursor === 'w-resize') {
+        //     this.resizeLeft(delta);
+        //     // left?
+        // }
+
         this.deltaX += deltaX;
+    }
+
+    private move(delta: number) {
+        const arr = Array.from(this.selected.values()).filter(
+            (value) => value.data?.canMove === true
+        );
+        // console.log(arr);
+        arr.forEach((value) => this.moveItem(value, delta));
+    }
+
+    resizeLeft(delta: number) {
+        Array.from(this.selected.values())
+            .filter((value) => value.data?.canChangeLength === true)
+            .forEach((value) => this.resizeItemLeft(value, delta));
+    }
+    resizeRight(delta: number) {
+        Array.from(this.selected.values())
+            .filter((value) => value.data?.canChangeLength === true)
+            .forEach((value) => this.resizeItemRight(value, delta));
+    }
+
+    private resizeItemLeft(value: DraggedItem, delta: number) {
+        console.log('left');
+    }
+    private resizeItemRight(value: DraggedItem, delta: number) {
+        console.log('right');
+    }
+
+    private moveItem(value: DraggedItem, delta: number) {
+        // console.log(value);
+        value.tempStart = value.tempStart.add(delta, 'second');
+        value.tempEnd = value.tempEnd.add(delta, 'second');
+
+        const snappedStart = snap(
+            value.tempStart,
+            this.timestep.scale,
+            this.timestep.step
+        );
+
+        const offset = value.data?.start.diff(snappedStart, 'seconds');
+        // console.log(offset);
+        value.dom.updateTime(
+            snappedStart,
+            snappedStart.add(value.data?.length, 'second'),
+            this.start,
+            this.end
+        );
     }
 
     dragItemEnd(event: HammerInput) {
@@ -167,21 +233,13 @@ export class DataControl implements IObservable, IObserver {
                     this.start,
                     this.end
                 );
-
-                // const offset = value.tempStart.diff(value.data.start, 'seconds');
                 value.data?.move(-offset);
-                console.log(snappedStart.format());
-                console.log(value.data.start.format());
                 value.tempStart = value.data.start;
                 value.tempEnd = value.data.end;
             }
-
-            // console.log(this.timestep.scale);
-            // console.log(this.timestep.step);
-            // console.log(value.data.start.format());
-
             this.publish('changed', this.draggedItem);
         });
+        this.render(this.start, this.end);
         this.selected.forEach((value: DraggedItem) => {
             value.dom.style.cursor = 'grab';
         });

@@ -57,6 +57,14 @@ export class MainControl implements IObserver {
 
     emit(keyword: string, data: HammerInput | Event): void {
         switch (keyword) {
+            case 'tap':
+                console.log(data.target.tagName);
+                console.log('click!');
+                if (data.target.tagName == 'DATA-VIEW') {
+                    this.contextMenuControl.toggleMenu('hide');
+                    this.dataControl.removeSelection();
+                }
+                break;
             case 'panstartitem':
                 console.log('here!');
                 this.draggable = false;
@@ -100,7 +108,6 @@ export class MainControl implements IObserver {
                 'linear',
                 ((-deltaX * this.timelineControl.timeframe) / (1000 * 1000)) * 0.7
             );
-            // this.timeline.updateScale('linear',move *this.timeline.timeframe/(1000*1000)*10)
             this.render();
             this.deltaX += deltaX;
         }
