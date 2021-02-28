@@ -12,6 +12,7 @@ import { TimelineControl } from './TimelineControl';
 
 export interface ISharedState {
     timestep: TimeStep;
+    visibleElements: Array<ITableData>;
 }
 
 export class MainControl implements IObserver {
@@ -32,7 +33,10 @@ export class MainControl implements IObserver {
             end: dayjs().add(7, 'day'),
         };
 
-        this.sharedState = { timestep: new TimeStep(dayjs(), dayjs(), 1) };
+        this.sharedState = {
+            timestep: new TimeStep(dayjs(), dayjs(), 1),
+            visibleElements: [],
+        };
 
         this.mainView = new MainView(root, options);
         this.mainView.subscribe(this);
@@ -45,7 +49,7 @@ export class MainControl implements IObserver {
             timelineOptions
         );
         this.dataControl = new DataControl(this.mainView, this.sharedState);
-        this.contextMenuControl = new ContextMenuControl(this.mainView);
+        this.contextMenuControl = new ContextMenuControl(this.mainView, this.sharedState);
 
         this.dataControl.subscribe(this);
         // this.timelineControl

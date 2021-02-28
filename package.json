@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "customhtmlbase": "^1.0.9",
-    "dayjs": "^1.10.4"
+    "dayjs": "^1.10.4",
+    "dialog-polyfill": "^0.5.6"
   }
 }

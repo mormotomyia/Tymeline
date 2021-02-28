@@ -1,8 +1,21 @@
-import {
-    CustomElement,
-    CustomHTMLElement,
-    CustomNoTemplateHTMLElement,
-} from 'customhtmlbase';
+import { CustomHTMLElement, CustomNoTemplateHTMLElement } from 'customhtmlbase';
+import { extend } from 'dayjs';
+
+export class CustomButtonBase extends HTMLButtonElement {
+    hammerEvents: HammerManager;
+
+    constructor(template: string) {
+        super();
+        this.hammerEvents = new Hammer(<HTMLElement>this);
+        this.innerHTML = `${template}`;
+        this.style.boxShadow = 'rgb(250,50,250) 0px 2px 0px';
+        this.style.backgroundColor = 'white';
+        this.style.border = 'none';
+        this.style.width = 'inherit';
+        this.style.height = '2vw';
+        this.style.margin = '2px 0 2px 0';
+    }
+}
 
 @CustomNoTemplateHTMLElement({
     selector: 'custom-button',
@@ -10,40 +23,26 @@ import {
     useShadow: false,
     extender: 'button',
 })
-export class CustomButton extends HTMLButtonElement {
+export class CustomButton extends CustomButtonBase {
     constructor(template: string) {
-        super();
-        // console.log(this.style);
-        this.innerHTML = `${template}`;
-        this.style.backgroundColor = 'white';
-        this.style.border = 'none';
-        this.style.width = 'inherit';
-        this.style.height = '2vw';
-        this.style.margin = '2px 0 2px 0';
+        super(template);
     }
 
     setTemplate() {
         console.log(this);
-        // this.children[1].innerHTML = template
     }
 }
 
-@CustomNoTemplateHTMLElement({
+@CustomHTMLElement({
     selector: 'custom-submenu-button',
+    template: '<i class ="fa fa-caret-right"></i>',
+    style: 'i{position:absolute; right:10px}',
     useShadow: false,
     extender: 'button',
 })
-export class CustomSubMenuButton extends HTMLButtonElement {
+export class CustomSubMenuButton extends CustomButtonBase {
     constructor(template: string) {
-        super();
-        // console.log(this.style);
-        this.innerHTML = `${template}`;
-        // this.style.content = ' \\00A7';
-        this.style.backgroundColor = 'white';
-        this.style.border = 'none';
-        this.style.width = 'inherit';
-        this.style.height = '2vw';
-        this.style.margin = '2px 0 2px 0';
+        super(template);
     }
 
     setTemplate() {

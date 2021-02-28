@@ -75,7 +75,6 @@ export class DataControl implements IObservable, IObserver {
 
     onSelect(event: HammerInput) {
         const data = <TableData>this.tableData.get(event.target.id);
-        console.log(data);
         const target = <DataViewItem>event.srcEvent.target;
         if (this.selected.has(event.target.id)) {
             // pass
@@ -118,7 +117,6 @@ export class DataControl implements IObservable, IObserver {
         // console.log(deltaX)
         const delta = ((deltaX * this.timeframe) / (1000 * 1000)) * 0.7; // this is the total offset time!
         this.selected.forEach((value: DraggedItem) => {
-            console.log(value.data?.canMove);
             if (
                 value.data?.canMove &&
                 (event.target.style.cursor === 'grab' ||
@@ -141,6 +139,8 @@ export class DataControl implements IObservable, IObserver {
                     this.start,
                     this.end
                 );
+            } else {
+                console.log('aaahhhh');
             }
         });
         this.deltaX += deltaX;
@@ -278,8 +278,8 @@ export class DataControl implements IObservable, IObserver {
     }
 
     render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
-        const elements: Array<ITableData> = this.getVisibleElements(start, end);
-        this.dataView.render(elements, this.selected, start, end);
+        this.sharedState.visibleElements = this.getVisibleElements(start, end);
+        this.dataView.render(this.sharedState.visibleElements, this.selected, start, end);
     }
 
     private getVisibleElements(start: dayjs.Dayjs, end: dayjs.Dayjs): Array<ITableData> {
@@ -294,6 +294,7 @@ export class DataControl implements IObservable, IObserver {
                 visibleData.push(value);
             }
         });
+
         return visibleData;
     }
 }

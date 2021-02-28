@@ -1,4 +1,5 @@
 import { CustomHTMLElement } from 'customhtmlbase';
+import dialogPolyfill from 'dialog-polyfill';
 import { IObservable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
 import { CustomButton, CustomSubMenuButton } from '../../custom-components/customButton';
@@ -10,12 +11,20 @@ import { CustomButton, CustomSubMenuButton } from '../../custom-components/custo
     style: '',
 })
 export class ContextMenuView extends HTMLElement implements IObservable {
+    dialog: HTMLDialogElement;
+    visible: boolean;
+    setMenu(x: number, y: number) {
+        this.style.left = `${x}px`;
+        this.style.top = `${y}px`;
+    }
     // contextMenu: HTMLDivElement = document.createElement('div');
     rootElement: HTMLElement;
     subscribers: Array<IObserver> = [];
 
     constructor(rootElement: HTMLElement) {
         super();
+        this.dialog = document.createElement('dialog');
+        dialogPolyfill.registerDialog(this.dialog);
         this.rootElement = rootElement;
 
         this.rootElement.oncontextmenu = (event: MouseEvent) => this.fireOnContext(event);
@@ -36,26 +45,19 @@ export class ContextMenuView extends HTMLElement implements IObservable {
     }
 
     toggleMenu = (command: string) => {
-        console.log(this.rootElement);
         if (command === 'show') {
             this.rootElement.appendChild(this);
+            this.visible = true;
         } else {
-            this.rootElement.removeChild(this);
+            if (this.rootElement.getElementsByTagName('contextmenu-view').length !== 0)
+                this.rootElement.removeChild(this);
+            this.hideDialog();
+            this.visible = false;
         }
-        // this.contextMenu.style.display = command === 'show' ? 'block' : 'none';
     };
 
     fireOnContext = (event: MouseEvent) => {
-        this.publish('onContextMenu', { test: 2 });
-        const classes: DOMTokenList = event.target.classList;
-        event.preventDefault();
-        // console.log(classes);
-        console.log(this.rootElement);
-        if (classes.contains('mormo-element')) {
-            this.style.left = `${event.pageX - 5}px`;
-            this.style.top = `${event.pageY - 5}px`;
-            this.toggleMenu('show');
-        }
+        this.publish('contextMenu', event);
     };
 
     createContextMenu() {
@@ -66,9 +68,15 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         const modify = new CustomButton('Change');
         const del = new CustomButton('Delete');
         const align = new CustomSubMenuButton('Align');
-        // align.style.
-        // 	22B3
-        const alignMenu = new ContextMenuView(this);
+
+        info.hammerEvents.on('tap', (event) => this.publish('tapInfo', event));
+        modify.hammerEvents.on('tap', (event) => this.publish('tapModify', event));
+        del.hammerEvents.on('tap', (event) => this.publish('tapDel', event));
+        align.hammerEvents.on('tap', (event) => this.publish('tapAlign', event));
+        // this.hammerview.on('tap', this.onSelect.bind(this));
+
+        // align.onclick = console.log;
+        // const alignMenu = new ContextMenuView(this);
 
         info.className = 'context-button';
         modify.className = 'context-button';
@@ -79,8 +87,6 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         this.appendChild(del);
         this.appendChild(align);
 
-        // this.contextMenu.appendChild(list)
-
         this.style.zIndex = '999';
         this.style.display = 'block';
         // this.contextMenu.style.height = '200px'
@@ -89,5 +95,23 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         this.style.borderRadius = '2px';
         this.style.position = 'absolute';
         this.style.boxShadow = '5px 5px 5px rgb(150,150,150)';
+    }
+
+    renderInfoDialog() {}
+    renderModifyDialog() {}
+    renderDeleteDialog() {}
+
+    renderDialog(content: string, id: string) {
+        // here I probably need different Dialogs but lets see
+
+        const template = `<div><h2>${content}</h2> ${id} </div>`;
+        this.dialog.innerHTML = template;
+        this.appendChild(this.dialog);
+        this.dialog.show();
+    }
+
+    hideDialog() {
+        if (this.dialog.open) this.dialog.close();
+        // this.dialog.setAttribute('open', 'none');
     }
 }
