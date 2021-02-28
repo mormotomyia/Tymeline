@@ -20,14 +20,12 @@ export class TimelineControl {
         this.timestep = this.sharedState.timestep;
         // this.timestep = new TimeStep(dayjs(), dayjs(), 1); // this may not be the optimal default value, please verify if this is ever accessable, even only by accident
         const arg = document.createElement('div');
-        const timelineView = new TimelineView(arg, this.timestep);
-        rootElement.appendChild(timelineView);
-        console.log(timelineView);
+
+        this.timelineView = new TimelineView(this.timestep);
+        rootElement.appendChild(this.timelineView);
 
         this.start = options.start;
         this.end = options.end;
-
-        timelineView.render(this.start, this.end);
 
         this.timelineView.oncontextmenu = (event: Event) => event.preventDefault();
     }

@@ -49,7 +49,7 @@ export class TimelineView extends HTMLElement implements IObservable {
     domItems: DomItems;
     subscribers: Array<IObserver> = [];
 
-    constructor(timeContainer: HTMLElement, timestep: TimeStep) {
+    constructor(timestep: TimeStep) {
         super();
         this.timestep = timestep;
         this.style.position = 'absolute';
@@ -60,16 +60,16 @@ export class TimelineView extends HTMLElement implements IObservable {
         this.style.width =
             '-webkit-fill-available'; /* Mozilla-based browsers will ignore this. */
         this.style.width = 'fill-available';
+        this.style.width = '1400px';
         this.style.border = 'solid';
         this.style.borderWidth = 'thin';
         this.style.borderTopWidth = 'thick';
         this.style.overflow = 'hidden';
-        // this.rootElement = this;
-        timeContainer.appendChild(this);
+
         this.domItems = new DomItems();
     }
 
-    subscribe(observer: IObserver) {
+    public subscribe(observer: IObserver) {
         this.subscribers.push(observer);
     }
 
@@ -105,7 +105,6 @@ export class TimelineView extends HTMLElement implements IObservable {
         this.domItems.clear();
 
         while (this.timestep.hasNext() && count < MAX) {
-            console.log('asd');
             count++;
             this.timestep.next();
             const isMajor = this.timestep.isMajor();

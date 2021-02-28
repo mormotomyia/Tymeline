@@ -1,44 +1,56 @@
-import { Observable } from '../../observer/Observable';
+import { CustomNoTemplateHTMLElement } from 'customhtmlbase';
+import { IObservable, Observable } from '../../observer/Observable';
+import { IObserver } from '../../observer/Observer';
 import { CustomButton } from '../custom-components/customButton';
 
-export class MainView extends Observable {
-    // tableContainer: HTMLDivElement;
-    // timeContainer: HTMLDivElement;
-    rootElement: HTMLElement;
-
+@CustomNoTemplateHTMLElement({
+    selector: 'main-view',
+    useShadow: false,
+})
+export class MainView extends HTMLElement implements IObservable {
+    subscribers: Array<IObserver> = [];
     constructor(root: HTMLElement, tableOptions?: any) {
         super();
-        if (root.nodeName !== 'DIV') {
-            const basediv = document.createElement('div');
-            root.appendChild(basediv);
-            root = basediv;
-        }
+        // if (root.nodeName !== 'DIV') {
+        //     const basediv = document.createElement('div');
+        //     root.appendChild(basediv);
+        //     root = basediv;
+        // }
+        root.appendChild(this);
+        // this.rootElement = root;
+        this.styleItem(tableOptions);
 
-        this.rootElement = root;
-        // this.rootElement.appendChild(this.contextMenu)
-        // this.tableContainer = document.createElement('div');
-        // this.timeContainer = document.createElement('div');
-        // this.timeContainer.classList.add('mormo-time');
-        this.style(tableOptions);
-
-        // this.rootElement.appendChild(this.tableContainer);
-        // this.rootElement.appendChild(this.timeContainer);
         this.addEvents();
+    }
+
+    public subscribe(observer: IObserver) {
+        this.subscribers.push(observer);
+    }
+
+    public unsubscribe(observer: IObserver) {
+        this.subscribers = this.subscribers.filter((el) => {
+            return el !== observer;
+        });
+    }
+    public publish(keyword: string, data: any) {
+        this.subscribers.forEach((subscriber) => {
+            subscriber.emit(keyword, data);
+        });
     }
 
     addEvents() {
         // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
 
-        const hammerview = new Hammer(this.rootElement);
+        const hammerview = new Hammer(this);
         hammerview.on('pan', (event) => this.publish('pan', event));
         hammerview.on('panstart', (event) => this.publish('panstart', event));
         hammerview.on('panend', (event) => this.publish('panend', event));
-        this.rootElement.onwheel = (event) => this.publish('onwheel', event);
+        this.onwheel = (event) => this.publish('onwheel', event);
     }
 
-    private style(tableOptions?: any) {
-        this.rootElement.classList.add('mormo-timeline');
-
+    private styleItem(tableOptions?: any) {
+        this.classList.add('mormo-timeline');
+        this.style.display = 'block';
         // this.timeContainer.style.position = 'absolute';
         // this.timeContainer.style.bottom = '0';
         // this.timeContainer.style.left = '0';
@@ -54,12 +66,12 @@ export class MainView extends Observable {
         // this.timeContainer.style.overflow = 'hidden';
 
         if (tableOptions) {
-            this.rootElement.style.width = `${tableOptions.size.width}px`;
-            this.rootElement.style.height = `${tableOptions.size.height}px`;
+            this.style.width = `${tableOptions.size.width}px`;
+            this.style.height = `${tableOptions.size.height}px`;
 
             if (tableOptions.colorschema) {
-                this.rootElement.style.color = `${tableOptions.colorschema.text}`;
-                this.rootElement.style.backgroundColor = `${tableOptions.colorschema.background}`;
+                this.style.color = `${tableOptions.colorschema.text}`;
+                this.style.backgroundColor = `${tableOptions.colorschema.background}`;
                 // this.timeContainer.style.borderColor = `${tableOptions.colorschema.borders}`;
             }
         }

@@ -40,12 +40,12 @@ export class MainControl implements IObserver {
         // this needs to be moved to the respective control points?
 
         this.timelineControl = new TimelineControl(
-            this.mainView.rootElement,
+            this.mainView,
             this.sharedState,
             timelineOptions
         );
-        this.dataControl = new DataControl(this.mainView.rootElement, this.sharedState);
-        this.contextMenuControl = new ContextMenuControl(this.mainView.rootElement);
+        this.dataControl = new DataControl(this.mainView, this.sharedState);
+        this.contextMenuControl = new ContextMenuControl(this.mainView);
 
         this.dataControl.subscribe(this);
         // this.timelineControl
