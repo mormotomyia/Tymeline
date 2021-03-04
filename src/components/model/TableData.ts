@@ -8,11 +8,6 @@ function log(ev: any) {
     console.log(ev);
 }
 
-// export function createComponentFromItableData(data:ITableData, rootitem: HTMLElement){
-//     rootitem.
-
-// }
-
 export class TableData implements ITableData {
     id: string;
     canMove: boolean;
@@ -78,9 +73,11 @@ export class TableData implements ITableData {
 
     changeLength(delta: number, start: boolean): void {
         if (start) {
-            this.start.add(delta, 'second');
+            this.start = this.end.subtract(delta, 'seconds');
+            // this.start.add(delta, 'second');
         } else {
-            this.end.add(delta, 'second');
+            this.end = this.start.add(delta, 'seconds');
+            // this.end.add(delta, 'second');
         }
     }
 

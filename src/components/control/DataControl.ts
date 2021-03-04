@@ -10,14 +10,13 @@ import { MormoDataView } from '../view/dataView/dataView';
 import { IObservable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
 import { DataViewItem } from '../view/dataView/dataViewItem';
-import { off } from 'hammerjs';
 import { snap } from '../../util/snap';
 import { ISharedState } from './MainControl';
 import TimeStep from '../view/timeline/TimeStep';
 
 export interface DraggedItem {
     dom: DataViewItem;
-    data: ITableData | undefined;
+    data: ITableData;
     tempStart: dayjs.Dayjs;
     tempEnd: dayjs.Dayjs;
 }
@@ -25,7 +24,6 @@ export class DataControl implements IObservable, IObserver {
     tableData: Map<string, TableData> = new Map();
     dataView: MormoDataView;
     subscribers: Array<IObserver> = [];
-    draggedItem: DraggedItem | undefined;
     deltaX = 0;
 
     selected: Map<string, DraggedItem> = new Map();
@@ -99,21 +97,11 @@ export class DataControl implements IObservable, IObserver {
 
     dragItemStart(event: HammerInput) {
         this.deltaX = 0;
-
-        if (!event.target.selected) {
-            event.target.select(event);
+        const target = <DataViewItem>event.target;
+        if (!target.selected) {
+            target.select();
         }
         console.log('GRABBING');
-        // if (event.target.style.cursor === 'grab') {
-        // this.selected.forEach((value: DraggedItem) => {
-        //     value.dom.style.cursor = 'grabbing';
-        // });
-        // }
-        // event.target.style.cursor = 'grabbing'
-
-        // this.draggedItem = {dom:<DataViewItem>event.target,data: this.tableData.get(event.target.id)}
-        // this.tempStart = this.draggedItem.data.start
-        // this.tempEnd = this.draggedItem.data.end
     }
 
     dragItem(event: HammerInput) {
@@ -123,7 +111,8 @@ export class DataControl implements IObservable, IObserver {
 
         // console.log(event.target.style.cursor);
         const delta = ((deltaX * this.timeframe) / (1000 * 1000)) * 0.7; // this is the total offset time!
-
+        console.log(event.target.style.cursor);
+        // console.log(this.selected);
         switch (event.target.style.cursor) {
             case 'grab':
                 // console.log('a');
@@ -138,29 +127,12 @@ export class DataControl implements IObservable, IObserver {
                 this.resizeRight(delta);
                 break;
             case 'w-resize':
-                // console.log('a');
+                console.log('a');
                 this.resizeLeft(delta);
                 break;
             default:
                 break;
         }
-        // if (
-        //     event.target.style.cursor === 'grab' ||
-        //     event.target.style.cursor === 'grabbing'
-        // ) {
-        //     // console.log('DRAAG');
-        //     this.move(delta);
-        //     // Array.from(this.selected.values())
-        //     //     .filter((value) => value.data?.canMove)
-        //     //     .forEach((value) => this.moveItem(value, delta));
-        // } else if (event.target.style.cursor === 'e-resize') {
-        //     this.resizeRight(delta);
-
-        //     // right?
-        // } else if (event.target.style.cursor === 'w-resize') {
-        //     this.resizeLeft(delta);
-        //     // left?
-        // }
 
         this.deltaX += deltaX;
     }
@@ -185,14 +157,21 @@ export class DataControl implements IObservable, IObserver {
     }
 
     private resizeItemLeft(value: DraggedItem, delta: number) {
-        console.log('left');
+        value.tempStart = value.tempStart.add(delta, 'second');
+        const snappedStart = snap(
+            value.tempStart,
+            this.timestep.scale,
+            this.timestep.step
+        );
+        value.dom.updateTime(snappedStart, value.tempEnd, this.start, this.end);
     }
     private resizeItemRight(value: DraggedItem, delta: number) {
-        console.log('right');
+        value.tempEnd = value.tempEnd.add(delta, 'second');
+        const snappedEnd = snap(value.tempEnd, this.timestep.scale, this.timestep.step);
+        value.dom.updateTime(value.tempStart, snappedEnd, this.start, this.end);
     }
 
     private moveItem(value: DraggedItem, delta: number) {
-        // console.log(value);
         value.tempStart = value.tempStart.add(delta, 'second');
         value.tempEnd = value.tempEnd.add(delta, 'second');
 
@@ -202,11 +181,9 @@ export class DataControl implements IObservable, IObserver {
             this.timestep.step
         );
 
-        const offset = value.data?.start.diff(snappedStart, 'seconds');
-        // console.log(offset);
         value.dom.updateTime(
             snappedStart,
-            snappedStart.add(value.data?.length, 'second'),
+            snappedStart.add(value.data.length, 'second'),
             this.start,
             this.end
         );
@@ -236,14 +213,61 @@ export class DataControl implements IObservable, IObserver {
                 value.data?.move(-offset);
                 value.tempStart = value.data.start;
                 value.tempEnd = value.data.end;
+            } else if (
+                value.data?.canChangeLength &&
+                event.target.style.cursor === 'e-resize'
+            ) {
+                // right
+                const snappedEnd = snap(
+                    value.tempEnd,
+                    this.timestep.scale,
+                    this.timestep.step
+                );
+
+                if (snappedEnd.diff(value.tempStart, 'second') > 0) {
+                    console.log('ASD');
+                    value.dom.updateTime(
+                        value.tempStart,
+                        snappedEnd,
+                        this.start,
+                        this.end
+                    );
+                    value.data.changeLength(
+                        snappedEnd.diff(value.tempStart, 'second'),
+                        false
+                    );
+                }
+            } else if (
+                value.data?.canChangeLength &&
+                event.target.style.cursor === 'w-resize'
+            ) {
+                // left
+                const snappedStart = snap(
+                    value.tempStart,
+                    this.timestep.scale,
+                    this.timestep.step
+                );
+
+                if (value.tempEnd.diff(snappedStart, 'second') > 0) {
+                    console.log('aaasda');
+                    value.dom.updateTime(
+                        snappedStart,
+                        value.tempEnd,
+                        this.start,
+                        this.end
+                    );
+                    value.data.changeLength(
+                        value.tempEnd.diff(snappedStart, 'second'),
+                        true
+                    );
+                }
             }
-            this.publish('changed', this.draggedItem);
+            this.selected.forEach((value: DraggedItem) => this.publish('changed', value));
         });
         this.render(this.start, this.end);
         this.selected.forEach((value: DraggedItem) => {
             value.dom.style.cursor = 'grab';
         });
-        delete this.draggedItem;
     }
 
     public subscribe(observer: IObserver) {

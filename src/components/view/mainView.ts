@@ -11,6 +11,7 @@ export class MainView extends HTMLElement implements IObservable {
     subscribers: Array<IObserver> = [];
     constructor(root: HTMLElement, tableOptions?: any) {
         super();
+        this.oncontextmenu = (event) => event.preventDefault();
 
         root.appendChild(this);
         this.styleItem(tableOptions);

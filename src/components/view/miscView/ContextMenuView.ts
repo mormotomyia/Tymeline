@@ -10,9 +10,11 @@ import { CustomButton, CustomSubMenuButton } from '../../custom-components/custo
     useShadow: false,
     style: '',
 })
-export class ContextMenuView extends HTMLElement implements IObservable {
+export class ContextMenuView extends HTMLElement implements IObservable, IObserver {
     dialog: HTMLDialogElement;
-    visible: boolean;
+    visible = false;
+    subMenu: ContextMenuView;
+
     setMenu(x: number, y: number) {
         this.style.left = `${x}px`;
         this.style.top = `${y}px`;
@@ -27,7 +29,7 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         dialogPolyfill.registerDialog(this.dialog);
         this.rootElement = rootElement;
 
-        this.rootElement.oncontextmenu = (event: MouseEvent) => this.fireOnContext(event);
+        // this.rootElement.oncontextmenu = (event: MouseEvent) => this.publish('contextMenu', event);
     }
     public subscribe(observer: IObserver) {
         this.subscribers.push(observer);
@@ -44,6 +46,10 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         });
     }
 
+    emit(keyword: string, data: any): void {
+        this.publish(keyword, data);
+    }
+
     toggleMenu = (command: string) => {
         if (command === 'show') {
             this.rootElement.appendChild(this);
@@ -56,36 +62,53 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         }
     };
 
-    fireOnContext = (event: MouseEvent) => {
-        this.publish('contextMenu', event);
-    };
+    fireOnContext = (event: MouseEvent) => {};
 
-    createContextMenu() {
+    /**
+     *
+     * @param buttons Array<{name:string,kind:typeof CustomButton | typeof CustomSubMenuButton}>
+     */
+
+    createContextMenu(
+        buttons: Array<{
+            name: string;
+            kind: typeof CustomButton | typeof CustomSubMenuButton;
+        }>
+    ) {
         this.className = 'context-menu';
         this.style.width = 'inherit';
+        const contextmenuItems = [];
+        buttons.forEach((element) => {
+            const item = new element.kind(element.name);
+            item.className = 'context-button';
+            item.hammerEvents.on('tap', (event) =>
+                this.publish(`tap${event.target.innerText}`, event)
+            );
+            this.append(item);
+            // contextmenuItems.push(new element.kind(element.name));
+        });
 
-        const info = new CustomButton('Info');
-        const modify = new CustomButton('Change');
-        const del = new CustomButton('Delete');
-        const align = new CustomSubMenuButton('Align');
+        // const info = new CustomButton('Info');
+        // const modify = new CustomButton('Change');
+        // const del = new CustomButton('Delete');
+        // const align = new CustomSubMenuButton('Align');
 
-        info.hammerEvents.on('tap', (event) => this.publish('tapInfo', event));
-        modify.hammerEvents.on('tap', (event) => this.publish('tapModify', event));
-        del.hammerEvents.on('tap', (event) => this.publish('tapDel', event));
-        align.hammerEvents.on('tap', (event) => this.publish('tapAlign', event));
-        // this.hammerview.on('tap', this.onSelect.bind(this));
+        // // info.hammerEvents.on('tap', (event) => this.publish('tapInfo', event));
+        // info.hammerEvents.on('tap', (event) =>
+        //     this.publish(`tap${event.target.innerText}`, event)
+        // );
+        // modify.hammerEvents.on('tap', (event) => this.publish('tapModify', event));
+        // del.hammerEvents.on('tap', (event) => this.publish('tapDel', event));
+        // align.hammerEvents.on('tap', (event) => this.publish('tapAlign', event));
 
-        // align.onclick = console.log;
-        // const alignMenu = new ContextMenuView(this);
-
-        info.className = 'context-button';
-        modify.className = 'context-button';
-        del.className = 'context-button';
-        align.className = 'context-button';
-        this.appendChild(info);
-        this.appendChild(modify);
-        this.appendChild(del);
-        this.appendChild(align);
+        // info.className = 'context-button';
+        // modify.className = 'context-button';
+        // del.className = 'context-button';
+        // align.className = 'context-button';
+        // this.appendChild(info);
+        // this.appendChild(modify);
+        // this.appendChild(del);
+        // this.appendChild(align);
 
         this.style.zIndex = '999';
         this.style.display = 'block';
@@ -95,6 +118,23 @@ export class ContextMenuView extends HTMLElement implements IObservable {
         this.style.borderRadius = '2px';
         this.style.position = 'absolute';
         this.style.boxShadow = '5px 5px 5px rgb(150,150,150)';
+        this.style.height = '136px';
+    }
+
+    renderSubMenu(content: string, id: string) {
+        if (this.subMenu) {
+            this.subMenu.toggleMenu('hide');
+            this.subMenu.remove();
+            // this.subMenu = null;
+        } else {
+            this.subMenu = new ContextMenuView(this);
+            this.subMenu.subscribe(this);
+            // this.subMenu.createContextMenu();
+            // this.subMenu.toggleMenu('show');
+            // const rect = this.getBoundingClientRect();
+            // this.subMenu.style.left = `${120}px`;
+            // this.subMenu.style.top = `${102}px`;
+        }
     }
 
     renderInfoDialog() {}
@@ -111,6 +151,7 @@ export class ContextMenuView extends HTMLElement implements IObservable {
     }
 
     hideDialog() {
+        if (this.subMenu) this.subMenu.toggleMenu('hide');
         if (this.dialog.open) this.dialog.close();
         // this.dialog.setAttribute('open', 'none');
     }

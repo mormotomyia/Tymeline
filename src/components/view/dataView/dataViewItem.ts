@@ -22,7 +22,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
     canChangeLength = false;
     hammerview: HammerManager;
     changeType: ChangeType | null;
-    pullWidth = 20;
+    pullWidth = 30;
     selected = false;
 
     private subscribers: Array<IObserver> = [];
@@ -33,6 +33,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
         // rootElement.appendChild(this);
         this.className = 'mormo-element';
 
+        this.oncontextmenu = (event) => this.publish('contextMenu', event);
         this.hammerview = new Hammer(this);
         // this.hammerview.on('pan',(event) => console.log(event))
 

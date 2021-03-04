@@ -12,7 +12,7 @@ export class CustomButtonBase extends HTMLButtonElement {
         this.style.backgroundColor = 'white';
         this.style.border = 'none';
         this.style.width = 'inherit';
-        this.style.height = '2vw';
+        this.style.height = '30px';
         this.style.margin = '2px 0 2px 0';
     }
 }

@@ -55,12 +55,12 @@ export class MainControl implements IObserver {
         // this.timelineControl
     }
 
-    emit(keyword: string, data: HammerInput | Event): void {
+    emit(keyword: string, event: HammerInput | Event): void {
         switch (keyword) {
             case 'tap':
-                console.log(data.target.tagName);
+                console.log(event.target.tagName);
                 console.log('click!');
-                if (data.target.tagName == 'DATA-VIEW') {
+                if (event.target.tagName == 'DATA-VIEW') {
                     this.contextMenuControl.toggleMenu('hide');
                     this.dataControl.removeSelection();
                 }
@@ -76,16 +76,20 @@ export class MainControl implements IObserver {
                 this.draggable = true;
                 break;
             case 'pan':
-                if (this.draggable) this.drag(<HammerInput>data);
+                if (this.draggable) this.drag(<HammerInput>event);
                 break;
             case 'panstart':
-                if (this.draggable) this.dragStart(<HammerInput>data);
+                if (this.draggable) this.dragStart(<HammerInput>event);
                 break;
             case 'panend':
-                if (this.draggable) this.dragEnd(<HammerInput>data);
+                if (this.draggable) this.dragEnd(<HammerInput>event);
                 break;
             case 'onwheel':
-                this.changeZoom(<WheelEvent>data);
+                this.changeZoom(<WheelEvent>event);
+                break;
+            case 'contextMenu':
+                event.preventDefault();
+                this.contextMenuControl.setContextMenu(<Event>event);
                 break;
             default:
                 break;
