@@ -14,6 +14,7 @@ import { snap } from '../../util/snap';
 import { ISharedState } from './MainControl';
 import TimeStep from '../view/timeline/TimeStep';
 import { IDataView } from '../model/ViewPresenter/IDataView';
+import { completeAssign } from '../../util/assign';
 
 export interface DraggedItem {
     dom: DataViewItem;
@@ -21,7 +22,30 @@ export interface DraggedItem {
     tempStart: dayjs.Dayjs;
     tempEnd: dayjs.Dayjs;
 }
-export class DataControl implements IObservable, IObserver {
+
+export class DraggedItemm {
+    dom: DataViewItem;
+    id: string;
+    tempStart: dayjs.Dayjs;
+    tempEnd: dayjs.Dayjs;
+
+    constructor(
+        dom: DataViewItem,
+        id: string,
+        tempStart: dayjs.Dayjs,
+        tempEnd: dayjs.Dayjs
+    ) {
+        this.dom = dom;
+        this.id = id;
+        this.tempStart = tempStart;
+        this.tempEnd = tempEnd;
+    }
+}
+
+export interface IDataControl extends IObservable, IObserver {
+    render(start: dayjs.Dayjs, end: dayjs.Dayjs): void;
+}
+export class DataControl implements IDataControl {
     tableData: Map<string, TableData> = new Map();
     dataView: IDataView;
     subscribers: Array<IObserver> = [];
@@ -41,25 +65,31 @@ export class DataControl implements IObservable, IObserver {
         this.dataView.subscribe(this);
     }
 
-    get timeframe() {
-        if (this.start && this.end) {
-            return this.end.diff(this.start);
-        }
-        return 0;
+    public subscribe(observer: IObserver) {
+        //we could check to see if it is already subscribed
+        this.subscribers.push(observer);
+        console.log(`${observer} "has been subscribed`);
+    }
+    public unsubscribe(observer: IObserver) {
+        this.subscribers = this.subscribers.filter((el) => {
+            return el !== observer;
+        });
+    }
+    public publish(keyword: string, data: any) {
+        this.subscribers.forEach((subscriber) => {
+            subscriber.emit(keyword, data);
+        });
     }
 
     public emit(keyword: string, data: any) {
         this.publish(keyword, data);
         switch (keyword) {
+            case 'removeSelection':
+                this.removeSelection();
+                break;
             case 'onSelect':
                 this.onSelect(<HammerInput>data);
                 break;
-            // case 'select':
-            //     this.addSelection(<HammerInput>data);
-            //     break;
-            // case 'unselect':
-            //     this.removeSelection(<HammerInput>data);
-            //     break;
             case 'panstartitem':
                 this.dragItemStart(<HammerInput>data);
                 break;
@@ -72,8 +102,17 @@ export class DataControl implements IObservable, IObserver {
         }
     }
 
-    onSelect(event: HammerInput) {
-        const data = <TableData>this.tableData.get(event.target.id);
+    get timeframe() {
+        if (this.start && this.end) {
+            return this.end.diff(this.start);
+        }
+        return 0;
+    }
+
+    private onSelect(event: HammerInput) {
+        console.log(this.tableData);
+        const data = <ITableData>this.tableData.get(event.target.id);
+
         const target = <DataViewItem>event.srcEvent.target;
         if (this.selected.has(event.target.id)) {
             // pass
@@ -91,12 +130,12 @@ export class DataControl implements IObservable, IObserver {
         console.log(`selected ${event.target.id}`);
         console.log(this.selected);
     }
-    removeSelection() {
+    public removeSelection() {
         this.selected.forEach((value) => value.dom.unselect());
         this.selected.clear();
     }
 
-    dragItemStart(event: HammerInput) {
+    private dragItemStart(event: HammerInput) {
         this.deltaX = 0;
         const target = <DataViewItem>event.target;
         if (!target.selected) {
@@ -105,7 +144,7 @@ export class DataControl implements IObservable, IObserver {
         console.log('GRABBING');
     }
 
-    dragItem(event: HammerInput) {
+    private dragItem(event: HammerInput) {
         let deltaX = event.deltaX;
         deltaX -= this.deltaX;
         // console.log(deltaX)
@@ -140,21 +179,20 @@ export class DataControl implements IObservable, IObserver {
 
     private move(delta: number) {
         const arr = Array.from(this.selected.values()).filter(
-            (value) => value.data?.canMove === true
+            (draggedItem) => draggedItem.data?.canMove === true
         );
-        // console.log(arr);
-        arr.forEach((value) => this.moveItem(value, delta));
+        arr.forEach((draggedItem) => this.moveItem(draggedItem, delta));
     }
 
-    resizeLeft(delta: number) {
+    private resizeLeft(delta: number) {
         Array.from(this.selected.values())
-            .filter((value) => value.data?.canChangeLength === true)
-            .forEach((value) => this.resizeItemLeft(value, delta));
+            .filter((draggedItem) => draggedItem.data?.canChangeLength === true)
+            .forEach((draggedItem) => this.resizeItemLeft(draggedItem, delta));
     }
-    resizeRight(delta: number) {
+    private resizeRight(delta: number) {
         Array.from(this.selected.values())
-            .filter((value) => value.data?.canChangeLength === true)
-            .forEach((value) => this.resizeItemRight(value, delta));
+            .filter((draggedItem) => draggedItem.data?.canChangeLength === true)
+            .forEach((draggedItem) => this.resizeItemRight(draggedItem, delta));
     }
 
     private resizeItemLeft(value: DraggedItem, delta: number) {
@@ -173,6 +211,7 @@ export class DataControl implements IObservable, IObserver {
     }
 
     private moveItem(value: DraggedItem, delta: number) {
+        // console.log(value.tempStart);
         value.tempStart = value.tempStart.add(delta, 'second');
         value.tempEnd = value.tempEnd.add(delta, 'second');
 
@@ -190,75 +229,84 @@ export class DataControl implements IObservable, IObserver {
         );
     }
 
-    dragItemEnd(event: HammerInput) {
-        this.selected.forEach((value: DraggedItem) => {
-            if (
-                value.data?.canMove &&
-                (event.target.style.cursor === 'grab' ||
-                    event.target.style.cursor === 'grabbing')
-            ) {
+    private grab(event: HammerInput, draggedItem: DraggedItem): boolean {
+        return (
+            draggedItem.data?.canMove &&
+            (event.target.style.cursor === 'grab' ||
+                event.target.style.cursor === 'grabbing')
+        );
+    }
+
+    private moveRight(event: HammerInput, draggedItem: DraggedItem): boolean {
+        return (
+            draggedItem.data?.canChangeLength && event.target.style.cursor === 'e-resize'
+        );
+    }
+    private moveLeft(event: HammerInput, draggedItem: DraggedItem): boolean {
+        return (
+            draggedItem.data?.canChangeLength && event.target.style.cursor === 'w-resize'
+        );
+    }
+
+    private dragItemEnd(event: HammerInput) {
+        this.selected.forEach((draggedItem: DraggedItem) => {
+            if (this.grab(event, draggedItem)) {
                 const snappedStart = snap(
-                    value.tempStart,
+                    draggedItem.tempStart,
                     this.timestep.scale,
                     this.timestep.step
                 );
 
-                const offset = value.data.start.diff(snappedStart, 'seconds');
-                console.log(offset);
-                value.dom.updateTime(
+                const offset = draggedItem.data.start.diff(snappedStart, 'seconds');
+
+                draggedItem.dom.updateTime(
                     snappedStart,
-                    snappedStart.add(value.data.length, 'second'),
+                    snappedStart.add(draggedItem.data.length, 'second'),
                     this.start,
                     this.end
                 );
-                value.data?.move(-offset);
-                value.tempStart = value.data.start;
-                value.tempEnd = value.data.end;
-            } else if (
-                value.data?.canChangeLength &&
-                event.target.style.cursor === 'e-resize'
-            ) {
+                draggedItem.data?.move(-offset);
+                draggedItem.tempStart = draggedItem.data.start;
+                draggedItem.tempEnd = draggedItem.data.end;
+            } else if (this.moveRight(event, draggedItem)) {
                 // right
                 const snappedEnd = snap(
-                    value.tempEnd,
+                    draggedItem.tempEnd,
                     this.timestep.scale,
                     this.timestep.step
                 );
 
-                if (snappedEnd.diff(value.tempStart, 'second') > 0) {
+                if (snappedEnd.diff(draggedItem.tempStart, 'second') > 0) {
                     console.log('ASD');
-                    value.dom.updateTime(
-                        value.tempStart,
+                    draggedItem.dom.updateTime(
+                        draggedItem.tempStart,
                         snappedEnd,
                         this.start,
                         this.end
                     );
-                    value.data.changeLength(
-                        snappedEnd.diff(value.tempStart, 'second'),
+                    draggedItem.data.changeLength(
+                        snappedEnd.diff(draggedItem.tempStart, 'second'),
                         false
                     );
                 }
-            } else if (
-                value.data?.canChangeLength &&
-                event.target.style.cursor === 'w-resize'
-            ) {
+            } else if (this.moveLeft(event, draggedItem)) {
                 // left
                 const snappedStart = snap(
-                    value.tempStart,
+                    draggedItem.tempStart,
                     this.timestep.scale,
                     this.timestep.step
                 );
 
-                if (value.tempEnd.diff(snappedStart, 'second') > 0) {
+                if (draggedItem.tempEnd.diff(snappedStart, 'second') > 0) {
                     console.log('aaasda');
-                    value.dom.updateTime(
+                    draggedItem.dom.updateTime(
                         snappedStart,
-                        value.tempEnd,
+                        draggedItem.tempEnd,
                         this.start,
                         this.end
                     );
-                    value.data.changeLength(
-                        value.tempEnd.diff(snappedStart, 'second'),
+                    draggedItem.data.changeLength(
+                        draggedItem.tempEnd.diff(snappedStart, 'second'),
                         true
                     );
                 }
@@ -271,92 +319,44 @@ export class DataControl implements IObservable, IObserver {
         });
     }
 
-    public subscribe(observer: IObserver) {
-        //we could check to see if it is already subscribed
-        this.subscribers.push(observer);
-        console.log(`${observer} "has been subscribed`);
-    }
-    public unsubscribe(observer: IObserver) {
-        this.subscribers = this.subscribers.filter((el) => {
-            return el !== observer;
-        });
-    }
-    public publish(keyword: string, data: any) {
-        this.subscribers.forEach((subscriber) => {
-            subscriber.emit(keyword, data);
-        });
+    private updateTableItem(element: ITableData) {
+        if (element.length)
+            this.tableData.set(
+                element.id.toString(),
+                TableData.fromLength(
+                    element.id,
+                    element.content,
+                    element.start,
+                    element.length,
+                    element.canMove,
+                    element.canChangeLength
+                )
+            );
+        if (element.end)
+            this.tableData.set(
+                element.id.toString(),
+                new TableData(
+                    element.id,
+                    element.content,
+                    element.start,
+                    element.end,
+                    element.canMove,
+                    element.canChangeLength
+                )
+            );
     }
 
-    updateTable(objects: { [key: number]: IBaseTableData }): void;
-    updateTable(objects: Array<ITableDataEntry>): void;
-
-    updateTable(objects: { [key: number]: IBaseTableData } | Array<ITableDataEntry>) {
-        console.log(objects);
-        if (Array.isArray(objects)) {
-            objects.forEach((element) => {
-                if (element.length)
-                    this.tableData.set(
-                        element.id.toString(),
-                        TableData.fromLength(
-                            element.id,
-                            element.content,
-                            element.start,
-                            element.length,
-                            element.canMove,
-                            element.canChangeLength
-                        )
-                    );
-                if (element.end)
-                    this.tableData.set(
-                        element.id.toString(),
-                        new TableData(
-                            element.id,
-                            element.content,
-                            element.start,
-                            element.end,
-                            element.canMove,
-                            element.canChangeLength
-                        )
-                    );
-            });
-        } else {
-            Object.entries(objects).forEach((e) => {
-                const element = e[1];
-                if (element.length)
-                    this.tableData.set(
-                        e[0],
-                        TableData.fromLength(
-                            e[0],
-                            element.content,
-                            element.start,
-                            element.length,
-                            element.canMove,
-                            element.canChangeLength
-                        )
-                    );
-                if (element.end)
-                    this.tableData.set(
-                        e[0],
-                        new TableData(
-                            e[0],
-                            element.content,
-                            element.start,
-                            element.end,
-                            element.canMove,
-                            element.canChangeLength
-                        )
-                    );
-            });
-        }
+    private updateTable(objects: Array<ITableData>) {
+        objects.forEach((element) => {
+            this.updateTableItem(element);
+        });
 
         console.log(this.tableData);
     }
 
-    setTable(objects: { [key: number]: IBaseTableData }): void;
-    setTable(objects: Array<ITableDataEntry>): void;
-
-    setTable(objects: { [key: number]: IBaseTableData } | Array<ITableDataEntry>) {
+    private setTable(objects: Array<ITableData>) {
         this.tableData.clear();
+
         this.updateTable(objects);
     }
 

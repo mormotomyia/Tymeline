@@ -7,7 +7,7 @@ import { MainView } from '../view/mainView';
 import { TimelineView } from '../view/timeline/TimelineView';
 import { TimeStep } from '../view/timeline/TimeStep';
 import { ContextMenuControl } from './ContextMenuControl';
-import { DataControl } from './DataControl';
+import { DataControl, IDataControl } from './DataControl';
 import { TimelineControl } from './TimelineControl';
 
 export interface ISharedState {
@@ -18,7 +18,7 @@ export interface ISharedState {
 export class MainControl implements IObserver {
     mainView: MainView;
     timelineControl: TimelineControl;
-    dataControl: DataControl;
+    dataControl: IDataControl;
     contextMenuControl: ContextMenuControl;
     deltaX = 0;
     draggable = true;
@@ -62,7 +62,8 @@ export class MainControl implements IObserver {
                 console.log('click!');
                 if (event.target.tagName == 'DATA-VIEW') {
                     this.contextMenuControl.toggleMenu('hide');
-                    this.dataControl.removeSelection();
+
+                    this.dataControl.emit('removeSelection', null);
                 }
                 break;
             case 'panstartitem':

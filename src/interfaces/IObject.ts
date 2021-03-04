@@ -14,14 +14,14 @@ export interface IProps {
 }
 export interface IBaseTableData {
     start: dayjs.Dayjs;
-    end?: dayjs.Dayjs;
-    length?: number;
+    end: dayjs.Dayjs;
+    length: number;
     content: { text: string };
     canMove: boolean;
     canChangeLength: boolean;
 }
 export interface ITableDataEntry extends IBaseTableData {
-    id: string | number;
+    id: string;
 }
 
 export interface ITableData extends ITableDataEntry {
