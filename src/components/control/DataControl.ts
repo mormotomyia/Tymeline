@@ -1,9 +1,4 @@
-import {
-    IBaseTableData,
-    IProps,
-    ITableData,
-    ITableDataEntry,
-} from '../../interfaces/IObject';
+import { ITableData } from '../../interfaces/IObject';
 import { TableData } from '../model/TableData';
 import dayjs from 'dayjs';
 import { MormoDataView } from '../view/dataView/dataView';
@@ -14,24 +9,34 @@ import { snap } from '../../util/snap';
 import { ISharedState } from './MainControl';
 import TimeStep from '../view/timeline/TimeStep';
 import { IDataView } from '../model/ViewPresenter/IDataView';
-import { completeAssign } from '../../util/assign';
 
-export interface DraggedItem {
+export interface IDraggedItem {
     dom: DataViewItem;
-    data: ITableData;
+    id: string;
+    canMove: boolean;
+    canChangeLength: boolean;
     tempStart: dayjs.Dayjs;
     tempEnd: dayjs.Dayjs;
+    originalEnd: dayjs.Dayjs;
+    originalStart: dayjs.Dayjs;
+    length: number;
 }
 
-export class DraggedItemm {
+export class DraggedItem implements IDraggedItem {
     dom: DataViewItem;
     id: string;
     tempStart: dayjs.Dayjs;
     tempEnd: dayjs.Dayjs;
+    canMove: boolean;
+    canChangeLength: boolean;
+    originalEnd: dayjs.Dayjs;
+    originalStart: dayjs.Dayjs;
 
     constructor(
         dom: DataViewItem,
         id: string,
+        canMove: boolean,
+        canChangeLength: boolean,
         tempStart: dayjs.Dayjs,
         tempEnd: dayjs.Dayjs
     ) {
@@ -39,6 +44,14 @@ export class DraggedItemm {
         this.id = id;
         this.tempStart = tempStart;
         this.tempEnd = tempEnd;
+        this.canMove = canMove;
+        this.canChangeLength = canChangeLength;
+        this.originalEnd = tempEnd;
+        this.originalStart = tempStart;
+    }
+
+    get length(): number {
+        return this.originalEnd.diff(this.originalStart, 'seconds');
     }
 }
 
@@ -51,7 +64,7 @@ export class DataControl implements IDataControl {
     subscribers: Array<IObserver> = [];
     deltaX = 0;
 
-    selected: Map<string, DraggedItem> = new Map();
+    selected: Map<string, IDraggedItem> = new Map();
 
     start: dayjs.Dayjs = dayjs();
     end: dayjs.Dayjs = dayjs();
@@ -119,12 +132,17 @@ export class DataControl implements IDataControl {
             target.unselect();
             this.selected.delete(event.target.id);
         } else {
-            this.selected.set(event.target.id, {
-                dom: <DataViewItem>event.target,
-                data: data,
-                tempStart: data.start,
-                tempEnd: data.end,
-            });
+            this.selected.set(
+                event.target.id,
+                new DraggedItem(
+                    <DataViewItem>event.target,
+                    data.id,
+                    data.canMove,
+                    data.canChangeLength,
+                    data.start,
+                    data.end
+                )
+            );
             target.select();
         }
         console.log(`selected ${event.target.id}`);
@@ -147,27 +165,19 @@ export class DataControl implements IDataControl {
     private dragItem(event: HammerInput) {
         let deltaX = event.deltaX;
         deltaX -= this.deltaX;
-        // console.log(deltaX)
-
-        // console.log(event.target.style.cursor);
         const delta = ((deltaX * this.timeframe) / (1000 * 1000)) * 0.7; // this is the total offset time!
-        console.log(event.target.style.cursor);
-        // console.log(this.selected);
+
         switch (event.target.style.cursor) {
             case 'grab':
-                // console.log('a');
                 this.move(delta);
                 break;
             case 'grabbing':
-                // console.log('a');
                 this.move(delta);
                 break;
             case 'e-resize':
-                // console.log('a');
                 this.resizeRight(delta);
                 break;
             case 'w-resize':
-                console.log('a');
                 this.resizeLeft(delta);
                 break;
             default:
@@ -178,24 +188,26 @@ export class DataControl implements IDataControl {
     }
 
     private move(delta: number) {
+        console.log(this.selected);
+
         const arr = Array.from(this.selected.values()).filter(
-            (draggedItem) => draggedItem.data?.canMove === true
+            (draggedItem) => draggedItem.canMove === true
         );
         arr.forEach((draggedItem) => this.moveItem(draggedItem, delta));
     }
 
     private resizeLeft(delta: number) {
         Array.from(this.selected.values())
-            .filter((draggedItem) => draggedItem.data?.canChangeLength === true)
+            .filter((draggedItem) => draggedItem.canChangeLength === true)
             .forEach((draggedItem) => this.resizeItemLeft(draggedItem, delta));
     }
     private resizeRight(delta: number) {
         Array.from(this.selected.values())
-            .filter((draggedItem) => draggedItem.data?.canChangeLength === true)
+            .filter((draggedItem) => draggedItem.canChangeLength === true)
             .forEach((draggedItem) => this.resizeItemRight(draggedItem, delta));
     }
 
-    private resizeItemLeft(value: DraggedItem, delta: number) {
+    private resizeItemLeft(value: IDraggedItem, delta: number) {
         value.tempStart = value.tempStart.add(delta, 'second');
         const snappedStart = snap(
             value.tempStart,
@@ -204,14 +216,13 @@ export class DataControl implements IDataControl {
         );
         value.dom.updateTime(snappedStart, value.tempEnd, this.start, this.end);
     }
-    private resizeItemRight(value: DraggedItem, delta: number) {
+    private resizeItemRight(value: IDraggedItem, delta: number) {
         value.tempEnd = value.tempEnd.add(delta, 'second');
         const snappedEnd = snap(value.tempEnd, this.timestep.scale, this.timestep.step);
         value.dom.updateTime(value.tempStart, snappedEnd, this.start, this.end);
     }
 
-    private moveItem(value: DraggedItem, delta: number) {
-        // console.log(value.tempStart);
+    private moveItem(value: IDraggedItem, delta: number) {
         value.tempStart = value.tempStart.add(delta, 'second');
         value.tempEnd = value.tempEnd.add(delta, 'second');
 
@@ -223,33 +234,32 @@ export class DataControl implements IDataControl {
 
         value.dom.updateTime(
             snappedStart,
-            snappedStart.add(value.data.length, 'second'),
+            snappedStart.add(
+                value.originalEnd.diff(value.originalStart, 'seconds'),
+                'second'
+            ),
             this.start,
             this.end
         );
     }
 
-    private grab(event: HammerInput, draggedItem: DraggedItem): boolean {
+    private grab(event: HammerInput, draggedItem: IDraggedItem): boolean {
         return (
-            draggedItem.data?.canMove &&
+            draggedItem.canMove &&
             (event.target.style.cursor === 'grab' ||
                 event.target.style.cursor === 'grabbing')
         );
     }
 
-    private moveRight(event: HammerInput, draggedItem: DraggedItem): boolean {
-        return (
-            draggedItem.data?.canChangeLength && event.target.style.cursor === 'e-resize'
-        );
+    private moveRight(event: HammerInput, draggedItem: IDraggedItem): boolean {
+        return draggedItem.canChangeLength && event.target.style.cursor === 'e-resize';
     }
-    private moveLeft(event: HammerInput, draggedItem: DraggedItem): boolean {
-        return (
-            draggedItem.data?.canChangeLength && event.target.style.cursor === 'w-resize'
-        );
+    private moveLeft(event: HammerInput, draggedItem: IDraggedItem): boolean {
+        return draggedItem.canChangeLength && event.target.style.cursor === 'w-resize';
     }
 
     private dragItemEnd(event: HammerInput) {
-        this.selected.forEach((draggedItem: DraggedItem) => {
+        this.selected.forEach((draggedItem: IDraggedItem) => {
             if (this.grab(event, draggedItem)) {
                 const snappedStart = snap(
                     draggedItem.tempStart,
@@ -257,17 +267,17 @@ export class DataControl implements IDataControl {
                     this.timestep.step
                 );
 
-                const offset = draggedItem.data.start.diff(snappedStart, 'seconds');
+                const offset = draggedItem.originalStart.diff(snappedStart, 'seconds');
 
-                draggedItem.dom.updateTime(
-                    snappedStart,
-                    snappedStart.add(draggedItem.data.length, 'second'),
-                    this.start,
-                    this.end
-                );
-                draggedItem.data?.move(-offset);
-                draggedItem.tempStart = draggedItem.data.start;
-                draggedItem.tempEnd = draggedItem.data.end;
+                // draggedItem.dom.updateTime(
+                //     snappedStart,
+                //     snappedStart.add(draggedItem.length, 'second'),
+                //     this.start,
+                //     this.end
+                // );
+                this.tableData.get(draggedItem.id)?.move(-offset);
+                // draggedItem.tempStart = draggedItem.start;
+                // draggedItem.tempEnd = draggedItem.end;
             } else if (this.moveRight(event, draggedItem)) {
                 // right
                 const snappedEnd = snap(
@@ -278,16 +288,18 @@ export class DataControl implements IDataControl {
 
                 if (snappedEnd.diff(draggedItem.tempStart, 'second') > 0) {
                     console.log('ASD');
-                    draggedItem.dom.updateTime(
-                        draggedItem.tempStart,
-                        snappedEnd,
-                        this.start,
-                        this.end
-                    );
-                    draggedItem.data.changeLength(
-                        snappedEnd.diff(draggedItem.tempStart, 'second'),
-                        false
-                    );
+                    // draggedItem.dom.updateTime(
+                    //     draggedItem.tempStart,
+                    //     snappedEnd,
+                    //     this.start,
+                    //     this.end
+                    // );
+                    this.tableData
+                        .get(draggedItem.id)
+                        ?.changeLength(
+                            snappedEnd.diff(draggedItem.tempStart, 'second'),
+                            false
+                        );
                 }
             } else if (this.moveLeft(event, draggedItem)) {
                 // left
@@ -298,23 +310,60 @@ export class DataControl implements IDataControl {
                 );
 
                 if (draggedItem.tempEnd.diff(snappedStart, 'second') > 0) {
-                    console.log('aaasda');
-                    draggedItem.dom.updateTime(
-                        snappedStart,
-                        draggedItem.tempEnd,
-                        this.start,
-                        this.end
-                    );
-                    draggedItem.data.changeLength(
-                        draggedItem.tempEnd.diff(snappedStart, 'second'),
-                        true
-                    );
+                    // draggedItem.dom.updateTime(
+                    //     snappedStart,
+                    //     draggedItem.tempEnd,
+                    //     this.start,
+                    //     this.end
+                    // );
+                    this.tableData
+                        .get(draggedItem.id)
+                        ?.changeLength(
+                            draggedItem.tempEnd.diff(snappedStart, 'second'),
+                            true
+                        );
+                    console.log(this.tableData.get(draggedItem.id)?.start.format());
+                    console.log(this.tableData.get(draggedItem.id)?.end.format());
                 }
             }
-            this.selected.forEach((value: DraggedItem) => this.publish('changed', value));
+
+            // const selection = new Map();
+            // this.selected.forEach((data: IDraggedItem, key: string) => {
+            //     selection.set(
+            //         event.target.id,
+            //         new DraggedItemm(
+            //             <DataViewItem>event.target,
+            //             data.id,
+            //             data.canMove,
+            //             data.canChangeLength,
+            //             data.tempStart,
+            //             data.tempEnd
+            //         )
+            //     );
+            // });
+            // this.selected = selection;
+        });
+        this.selected.forEach((value: IDraggedItem) => this.publish('changed', value));
+        const sel: Array<string> = [];
+        this.selected.forEach((_, key) => sel.push(key));
+        this.removeSelection();
+        sel.forEach((key: string) => {
+            const data = <ITableData>this.tableData.get(event.target.id);
+            console.log('AAA');
+            this.selected.set(
+                key,
+                new DraggedItem(
+                    <DataViewItem>event.target,
+                    data.id,
+                    data.canMove,
+                    data.canChangeLength,
+                    data.start,
+                    data.end
+                )
+            );
         });
         this.render(this.start, this.end);
-        this.selected.forEach((value: DraggedItem) => {
+        this.selected.forEach((value: IDraggedItem) => {
             value.dom.style.cursor = 'grab';
         });
     }

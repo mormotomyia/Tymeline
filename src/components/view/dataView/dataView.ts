@@ -4,7 +4,7 @@ import { stringify } from 'node:querystring';
 import { ITableData } from '../../../interfaces/IObject';
 import { IObservable, Observable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
-import { DraggedItem } from '../../control/DataControl';
+import { IDraggedItem } from '../../control/DataControl';
 import { CustomButton } from '../../custom-components/customButton';
 import { DomItems } from '../../model/DomItems';
 import { TableData } from '../../model/TableData';
@@ -77,7 +77,7 @@ export class MormoDataView extends HTMLElement implements IDataView {
 
     render(
         elements: Array<ITableData>,
-        selected: Map<string, DraggedItem>,
+        selected: Map<string, IDraggedItem>,
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ) {
@@ -116,7 +116,7 @@ export class MormoDataView extends HTMLElement implements IDataView {
 
     private reuseDomComponent(
         element: ITableData,
-        selected: Map<string, DraggedItem>,
+        selected: Map<string, IDraggedItem>,
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ) {
