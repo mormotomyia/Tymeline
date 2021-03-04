@@ -8,13 +8,14 @@ import { DraggedItem } from '../../control/DataControl';
 import { CustomButton } from '../../custom-components/customButton';
 import { DomItems } from '../../model/DomItems';
 import { TableData } from '../../model/TableData';
+import { IDataView } from '../../model/ViewPresenter/IDataView';
 import { DataViewItem } from './dataViewItem';
 
 @CustomNoTemplateHTMLElement({
     selector: 'data-view',
     useShadow: false,
 })
-export class MormoDataView extends HTMLElement implements IObservable, IObserver {
+export class MormoDataView extends HTMLElement implements IDataView {
     rows: Array<Array<DataViewItem>> = [[]];
     domItems: DomItems;
     styleFunc?: () => void;
@@ -53,7 +54,7 @@ export class MormoDataView extends HTMLElement implements IObservable, IObserver
         });
     }
 
-    buildLayers(reusedComponent: DataViewItem) {
+    private buildLayers(reusedComponent: DataViewItem) {
         const res = this.rows.some((row: Array<DataViewItem>) => {
             if (
                 row.every((value: DataViewItem) => {
@@ -113,7 +114,7 @@ export class MormoDataView extends HTMLElement implements IObservable, IObserver
         this.domItems.redundantLegendMajor = [];
     }
 
-    reuseDomComponent(
+    private reuseDomComponent(
         element: ITableData,
         selected: Map<string, DraggedItem>,
         start: dayjs.Dayjs,

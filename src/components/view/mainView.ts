@@ -34,7 +34,7 @@ export class MainView extends HTMLElement implements IObservable {
         });
     }
 
-    addEvents() {
+    private addEvents() {
         // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
 
         const hammerview = new Hammer(this);

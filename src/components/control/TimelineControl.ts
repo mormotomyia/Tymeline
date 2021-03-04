@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { ITimelineView } from '../model/ViewPresenter/ITimelineView';
 import { TimelineView } from '../view/timeline/TimelineView';
 import TimeStep from '../view/timeline/TimeStep';
 import { ISharedState } from './MainControl';
@@ -7,7 +8,7 @@ export class TimelineControl {
     start: dayjs.Dayjs;
     end: dayjs.Dayjs;
 
-    timelineView: TimelineView;
+    timelineView: ITimelineView;
     timestep: TimeStep;
     sharedState: ISharedState;
 
@@ -22,12 +23,12 @@ export class TimelineControl {
         const arg = document.createElement('div');
 
         this.timelineView = new TimelineView(this.timestep);
-        rootElement.appendChild(this.timelineView);
+        rootElement.appendChild(this.timelineView.node);
 
         this.start = options.start;
         this.end = options.end;
-
-        this.timelineView.oncontextmenu = (event: Event) => event.preventDefault();
+        this.timelineView.on('contextmenu', (event: Event) => event.preventDefault());
+        // this.timelineView.oncontextmenu = (event: Event) => event.preventDefault();
     }
 
     get timeframe() {

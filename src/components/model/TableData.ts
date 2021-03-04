@@ -1,8 +1,5 @@
 import { ITableData } from '../../interfaces/IObject';
-import {} from '../../interfaces/ITableOptions';
-import {} from '../view/timeline/TimelineView';
 import dayjs from 'dayjs';
-import { type } from 'node:os';
 
 function log(ev: any) {
     console.log(ev);
@@ -38,7 +35,6 @@ export class TableData implements ITableData {
         return new TableData(id, content, start, end, canMove, canChangeLength);
     }
 
-    // constructor(id:number|string,content:{text:string},start:number|string|dayjs.Dayjs,length:number)
     constructor(
         id: number | string,
         content: { text: string },
@@ -54,8 +50,6 @@ export class TableData implements ITableData {
         } else {
             this.start = start;
         }
-
-        // console.log(length,end)
 
         if (typeof end === 'number') {
             this.end = dayjs(end);
@@ -74,10 +68,8 @@ export class TableData implements ITableData {
     changeLength(delta: number, start: boolean): void {
         if (start) {
             this.start = this.end.subtract(delta, 'seconds');
-            // this.start.add(delta, 'second');
         } else {
             this.end = this.start.add(delta, 'seconds');
-            // this.end.add(delta, 'second');
         }
     }
 

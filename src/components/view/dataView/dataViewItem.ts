@@ -21,7 +21,6 @@ export class DataViewItem extends HTMLElement implements IObservable {
     canMove = false;
     canChangeLength = false;
     hammerview: HammerManager;
-    changeType: ChangeType | null;
     pullWidth = 30;
     selected = false;
 
@@ -51,16 +50,12 @@ export class DataViewItem extends HTMLElement implements IObservable {
         // where do I even fire them to?!
         // this does need some more thought! (as of right now this is just a builder class which is reusable but also not well defined)
 
-        // this.changeType = ChangeType.idle;
         this.content = document.createElement('div');
         this.appendChild(this.content);
-        // this.content = <HTMLDivElement>this.getElementsByClassName('content')[0];
+
         this.content.style.userSelect = 'none';
-
         this.content.style.pointerEvents = 'none';
-
         this.onmousemove = this.changeMouseOnEdgeLeftRight;
-        // this.onmouseleave = () => {console.log('LEAVE');this.changeType = null;}
     }
 
     public overlap(other: DataViewItem): boolean {

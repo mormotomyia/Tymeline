@@ -13,6 +13,7 @@ import { DataViewItem } from '../view/dataView/dataViewItem';
 import { snap } from '../../util/snap';
 import { ISharedState } from './MainControl';
 import TimeStep from '../view/timeline/TimeStep';
+import { IDataView } from '../model/ViewPresenter/IDataView';
 
 export interface DraggedItem {
     dom: DataViewItem;
@@ -22,7 +23,7 @@ export interface DraggedItem {
 }
 export class DataControl implements IObservable, IObserver {
     tableData: Map<string, TableData> = new Map();
-    dataView: MormoDataView;
+    dataView: IDataView;
     subscribers: Array<IObserver> = [];
     deltaX = 0;
 

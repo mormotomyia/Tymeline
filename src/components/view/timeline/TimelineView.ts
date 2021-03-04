@@ -6,6 +6,7 @@ import { IObservable, Observable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
 import { CustomHTMLElement, CustomNoTemplateHTMLElement } from 'customhtmlbase';
 import { time } from 'node:console';
+import { ITimelineView } from '../../model/ViewPresenter/ITimelineView';
 
 const MAX = 1000;
 const print = (...args: any) => console.log(args);
@@ -42,7 +43,7 @@ function daysInMonth(date: Date) {
     selector: 'timeline-view',
     useShadow: false,
 })
-export class TimelineView extends HTMLElement implements IObservable {
+export class TimelineView extends HTMLElement implements ITimelineView {
     timestep: TimeStep;
 
     // rootElement: HTMLElement;
@@ -51,6 +52,7 @@ export class TimelineView extends HTMLElement implements IObservable {
 
     constructor(timestep: TimeStep) {
         super();
+
         this.timestep = timestep;
         this.style.position = 'absolute';
         this.style.bottom = '0';
@@ -69,6 +71,14 @@ export class TimelineView extends HTMLElement implements IObservable {
         this.domItems = new DomItems();
     }
 
+    public get node(): Node {
+        return this;
+    }
+
+    on(key: string, callback: (event: Event) => void) {
+        this.addEventListener(key, callback);
+    }
+
     public subscribe(observer: IObserver) {
         this.subscribers.push(observer);
     }
@@ -84,7 +94,7 @@ export class TimelineView extends HTMLElement implements IObservable {
         });
     }
 
-    updateScale(start: dayjs.Dayjs, end: dayjs.Dayjs) {
+    public updateScale(start: dayjs.Dayjs, end: dayjs.Dayjs) {
         // console.log(this.timeframe)
         // console.log(this.getBoundingClientRect().width);
 
@@ -97,7 +107,7 @@ export class TimelineView extends HTMLElement implements IObservable {
         );
     }
 
-    render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
+    public render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
         let count = 0;
         this.timestep.start();
 

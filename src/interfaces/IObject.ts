@@ -24,15 +24,7 @@ export interface ITableDataEntry extends IBaseTableData {
     id: string | number;
 }
 
-export interface ITableData {
-    canMove: boolean;
-    canChangeLength: boolean;
-    start: dayjs.Dayjs;
-    end: dayjs.Dayjs;
-    id: string;
-    content: { text: string };
-    length: number;
-
+export interface ITableData extends ITableDataEntry {
     move(delta: number): void;
     changeLength(delta: number, start: boolean): void;
 }
