@@ -2,7 +2,22 @@ import { CustomHTMLElement } from 'customhtmlbase';
 import dialogPolyfill from 'dialog-polyfill';
 import { IObservable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
+import { ContextMenuControl } from '../../control/ContextMenuControl';
 import { CustomButton, CustomSubMenuButton } from '../../custom-components/customButton';
+
+export interface IContextMenuView extends IObservable, IObserver {
+    visible: boolean;
+    subMenu: IContextMenuView | undefined;
+    rootElement: HTMLElement;
+    setMenu(
+        x: number,
+        y: number,
+        args: Array<{ name: string; kind: typeof CustomButton }>
+    ): void;
+    hide(): void;
+    renderDialog(content: string, id: string): void;
+    renderSubMenu(content: string, id: string): void;
+}
 
 @CustomHTMLElement({
     selector: 'contextmenu-view',
@@ -10,15 +25,11 @@ import { CustomButton, CustomSubMenuButton } from '../../custom-components/custo
     useShadow: false,
     style: '',
 })
-export class ContextMenuView extends HTMLElement implements IObservable, IObserver {
+export class ContextMenuView extends HTMLElement implements IContextMenuView {
     dialog: HTMLDialogElement;
     visible = false;
-    subMenu: ContextMenuView;
+    subMenu: IContextMenuView | undefined;
 
-    setMenu(x: number, y: number) {
-        this.style.left = `${x}px`;
-        this.style.top = `${y}px`;
-    }
     // contextMenu: HTMLDivElement = document.createElement('div');
     rootElement: HTMLElement;
     subscribers: Array<IObserver> = [];
@@ -28,8 +39,6 @@ export class ContextMenuView extends HTMLElement implements IObservable, IObserv
         this.dialog = document.createElement('dialog');
         dialogPolyfill.registerDialog(this.dialog);
         this.rootElement = rootElement;
-
-        // this.rootElement.oncontextmenu = (event: MouseEvent) => this.publish('contextMenu', event);
     }
     public subscribe(observer: IObserver) {
         this.subscribers.push(observer);
@@ -46,30 +55,33 @@ export class ContextMenuView extends HTMLElement implements IObservable, IObserv
         });
     }
 
+    setMenu(
+        x: number,
+        y: number,
+        args: Array<{ name: string; kind: typeof CustomButton }>
+    ) {
+        this.createContextMenu(args);
+        this.style.left = `${x}px`;
+        this.style.top = `${y}px`;
+        this.rootElement.appendChild(this);
+        this.visible = true;
+    }
+
     emit(keyword: string, data: any): void {
         this.publish(keyword, data);
     }
 
-    toggleMenu = (command: string) => {
-        if (command === 'show') {
-            this.rootElement.appendChild(this);
-            this.visible = true;
-        } else {
-            if (this.rootElement.getElementsByTagName('contextmenu-view').length !== 0)
-                this.rootElement.removeChild(this);
-            this.hideDialog();
-            this.visible = false;
-        }
-    };
+    hide() {
+        if (this.rootElement.getElementsByTagName('contextmenu-view').length !== 0)
+            this.rootElement.removeChild(this);
+        this.hideDialog();
+        this.visible = false;
+        this.rootElement.removeChild(this);
+    }
 
-    fireOnContext = (event: MouseEvent) => {};
+    fireOnContext(event: MouseEvent) {}
 
-    /**
-     *
-     * @param buttons Array<{name:string,kind:typeof CustomButton | typeof CustomSubMenuButton}>
-     */
-
-    createContextMenu(
+    private createContextMenu(
         buttons: Array<{
             name: string;
             kind: typeof CustomButton | typeof CustomSubMenuButton;
@@ -88,28 +100,6 @@ export class ContextMenuView extends HTMLElement implements IObservable, IObserv
             // contextmenuItems.push(new element.kind(element.name));
         });
 
-        // const info = new CustomButton('Info');
-        // const modify = new CustomButton('Change');
-        // const del = new CustomButton('Delete');
-        // const align = new CustomSubMenuButton('Align');
-
-        // // info.hammerEvents.on('tap', (event) => this.publish('tapInfo', event));
-        // info.hammerEvents.on('tap', (event) =>
-        //     this.publish(`tap${event.target.innerText}`, event)
-        // );
-        // modify.hammerEvents.on('tap', (event) => this.publish('tapModify', event));
-        // del.hammerEvents.on('tap', (event) => this.publish('tapDel', event));
-        // align.hammerEvents.on('tap', (event) => this.publish('tapAlign', event));
-
-        // info.className = 'context-button';
-        // modify.className = 'context-button';
-        // del.className = 'context-button';
-        // align.className = 'context-button';
-        // this.appendChild(info);
-        // this.appendChild(modify);
-        // this.appendChild(del);
-        // this.appendChild(align);
-
         this.style.zIndex = '999';
         this.style.display = 'block';
         // this.contextMenu.style.height = '200px'
@@ -118,28 +108,25 @@ export class ContextMenuView extends HTMLElement implements IObservable, IObserv
         this.style.borderRadius = '2px';
         this.style.position = 'absolute';
         this.style.boxShadow = '5px 5px 5px rgb(150,150,150)';
-        this.style.height = '136px';
+        this.style.height = `${buttons.length * 34}px`; // 136 // 102 // 68
+
+        //34 // 36
     }
 
     renderSubMenu(content: string, id: string) {
         if (this.subMenu) {
-            this.subMenu.toggleMenu('hide');
-            this.subMenu.remove();
-            // this.subMenu = null;
+            console.log(this.subMenu);
+            this.subMenu.hide();
+            this.subMenu = undefined;
+
+            // delete this.subMenu;
         } else {
             this.subMenu = new ContextMenuView(this);
-            this.subMenu.subscribe(this);
-            // this.subMenu.createContextMenu();
-            // this.subMenu.toggleMenu('show');
-            // const rect = this.getBoundingClientRect();
-            // this.subMenu.style.left = `${120}px`;
-            // this.subMenu.style.top = `${102}px`;
+            // this.subMenu.setMenu([{ name: 'Info', kind: CustomButton }]);
+            // this.subMenu.subscribe(this);
+            // this.appendChild(this.subMenu);
         }
     }
-
-    renderInfoDialog() {}
-    renderModifyDialog() {}
-    renderDeleteDialog() {}
 
     renderDialog(content: string, id: string) {
         // here I probably need different Dialogs but lets see
@@ -148,11 +135,5 @@ export class ContextMenuView extends HTMLElement implements IObservable, IObserv
         this.dialog.innerHTML = template;
         this.appendChild(this.dialog);
         this.dialog.show();
-    }
-
-    hideDialog() {
-        if (this.subMenu) this.subMenu.toggleMenu('hide');
-        if (this.dialog.open) this.dialog.close();
-        // this.dialog.setAttribute('open', 'none');
     }
 }

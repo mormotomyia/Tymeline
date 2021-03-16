@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
+import { IContextMenuControl } from '../../interfaces/IContentMenuControl';
 import { ITableData } from '../../interfaces/IObject';
 import { IObserver, Observer } from '../../observer/Observer';
+import { CustomButton } from '../custom-components/customButton';
 import { TableData } from '../model/TableData';
 import { MormoDataView } from '../view/dataView/dataView';
 import { MainView } from '../view/mainView';
@@ -19,7 +21,7 @@ export class MainControl implements IObserver {
     mainView: MainView;
     timelineControl: TimelineControl;
     dataControl: IDataControl;
-    contextMenuControl: ContextMenuControl;
+    contextMenuControl: IContextMenuControl;
     deltaX = 0;
     draggable = true;
     sharedState: ISharedState;

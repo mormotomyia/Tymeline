@@ -94,14 +94,17 @@ export class DataControl implements IDataControl {
         });
     }
 
-    public emit(keyword: string, data: any) {
+    public emit(keyword: string, data: HammerInput | Event) {
         this.publish(keyword, data);
         switch (keyword) {
             case 'removeSelection':
                 this.removeSelection();
                 break;
             case 'onSelect':
-                this.onSelect(<HammerInput>data);
+                this.onSelect(<MouseEvent>data);
+                break;
+            case 'onUnselect':
+                this.onUnselect(<MouseEvent>data);
                 break;
             case 'panstartitem':
                 this.dragItemStart(<HammerInput>data);
@@ -122,20 +125,32 @@ export class DataControl implements IDataControl {
         return 0;
     }
 
-    private onSelect(event: HammerInput) {
-        console.log(this.tableData);
-        const data = <ITableData>this.tableData.get(event.target.id);
+    private onUnselect(event: MouseEvent) {
+        const dataViewItem = <DataViewItem>event.target;
+        if (!dataViewItem.pristine) {
+            dataViewItem.unselect();
+            this.selected.delete(dataViewItem.id);
+            dataViewItem.pristine = true;
+        } else {
+            dataViewItem.pristine = false;
+        }
+    }
 
-        const target = <DataViewItem>event.srcEvent.target;
-        if (this.selected.has(event.target.id)) {
-            // pass
-            target.unselect();
-            this.selected.delete(event.target.id);
+    private onSelect(event: MouseEvent) {
+        console.log(this.tableData);
+        const dataViewItem = <DataViewItem>event.target;
+        const data = <ITableData>this.tableData.get(dataViewItem.id);
+
+        // const target = <DataViewItem>event.srcEvent.target;
+        if (this.selected.has(dataViewItem.id)) {
+            //pass
+            // dataViewItem.unselect();
+            // this.selected.delete(dataViewItem.id);
         } else {
             this.selected.set(
-                event.target.id,
+                dataViewItem.id,
                 new DraggedItem(
-                    <DataViewItem>event.target,
+                    dataViewItem,
                     data.id,
                     data.canMove,
                     data.canChangeLength,
@@ -143,9 +158,9 @@ export class DataControl implements IDataControl {
                     data.end
                 )
             );
-            target.select();
+            dataViewItem.select();
         }
-        console.log(`selected ${event.target.id}`);
+        console.log(`selected ${dataViewItem.id}`);
         console.log(this.selected);
     }
     public removeSelection() {
@@ -159,7 +174,6 @@ export class DataControl implements IDataControl {
         if (!target.selected) {
             target.select();
         }
-        console.log('GRABBING');
     }
 
     private dragItem(event: HammerInput) {
@@ -188,7 +202,7 @@ export class DataControl implements IDataControl {
     }
 
     private move(delta: number) {
-        console.log(this.selected);
+        // console.log(this.selected);
 
         const arr = Array.from(this.selected.values()).filter(
             (draggedItem) => draggedItem.canMove === true
@@ -225,7 +239,7 @@ export class DataControl implements IDataControl {
     private moveItem(value: IDraggedItem, delta: number) {
         value.tempStart = value.tempStart.add(delta, 'second');
         value.tempEnd = value.tempEnd.add(delta, 'second');
-
+        console.log(delta);
         const snappedStart = snap(
             value.tempStart,
             this.timestep.scale,
@@ -326,42 +340,27 @@ export class DataControl implements IDataControl {
                     console.log(this.tableData.get(draggedItem.id)?.end.format());
                 }
             }
-
-            // const selection = new Map();
-            // this.selected.forEach((data: IDraggedItem, key: string) => {
-            //     selection.set(
-            //         event.target.id,
-            //         new DraggedItemm(
-            //             <DataViewItem>event.target,
-            //             data.id,
-            //             data.canMove,
-            //             data.canChangeLength,
-            //             data.tempStart,
-            //             data.tempEnd
-            //         )
-            //     );
-            // });
-            // this.selected = selection;
         });
         this.selected.forEach((value: IDraggedItem) => this.publish('changed', value));
         const sel: Array<string> = [];
         this.selected.forEach((_, key) => sel.push(key));
         this.removeSelection();
-        sel.forEach((key: string) => {
-            const data = <ITableData>this.tableData.get(event.target.id);
-            console.log('AAA');
-            this.selected.set(
-                key,
-                new DraggedItem(
-                    <DataViewItem>event.target,
-                    data.id,
-                    data.canMove,
-                    data.canChangeLength,
-                    data.start,
-                    data.end
-                )
-            );
-        });
+        // console.log(sel);
+        // sel.forEach((key: string) => {
+        //     const data = <ITableData>this.tableData.get(key);
+        //     console.log('AAA');
+        //     this.selected.set(
+        //         key,
+        //         new DraggedItem(
+        //             <DataViewItem>event.target,
+        //             data.id,
+        //             data.canMove,
+        //             data.canChangeLength,
+        //             data.start,
+        //             data.end
+        //         )
+        //     );
+        // });
         this.render(this.start, this.end);
         this.selected.forEach((value: IDraggedItem) => {
             value.dom.style.cursor = 'grab';

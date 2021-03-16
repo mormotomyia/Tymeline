@@ -1,10 +1,11 @@
+import { IContextMenuControl } from '../../interfaces/IContentMenuControl';
 import { IObserver, Observer } from '../../observer/Observer';
 import { CustomButton, CustomSubMenuButton } from '../custom-components/customButton';
-import { ContextMenuView } from '../view/miscView/ContextMenuView';
+import { ContextMenuView, IContextMenuView } from '../view/miscView/ContextMenuView';
 import { ISharedState } from './MainControl';
 
-export class ContextMenuControl implements IObserver {
-    contextMenuView: ContextMenuView;
+export class ContextMenuControl implements IContextMenuControl {
+    contextMenuView: IContextMenuView;
     menuLocation: HTMLElement | undefined;
     sharedState: ISharedState;
     viewOptions: { name: string; kind: typeof CustomButton }[];
@@ -18,26 +19,22 @@ export class ContextMenuControl implements IObserver {
             { name: 'Delete', kind: CustomButton },
             { name: 'Align', kind: CustomSubMenuButton },
         ];
-        this.contextMenuView.createContextMenu(this.viewOptions);
 
         this.contextMenuView.subscribe(this);
-
-        // window.addEventListener('click', (event: MouseEvent) => {
-        //     console.log('asd');
-        //     if (event.target.parentElement.tagName !== 'CONTEXTMENU-VIEW') {
-        //         this.contextMenuView.toggleMenu('hide');
-        //     }
-        // });
     }
 
-    setContextMenu(event: Event) {
+    public setContextMenu(event: MouseEvent) {
         this.menuLocation = <HTMLElement>event.target;
-        this.contextMenuView.setMenu(event.pageX - 5, event.pageY - 5);
-        this.contextMenuView.toggleMenu('show');
-        this.contextMenuView.hideDialog();
+        this.contextMenuView.setMenu(event.pageX - 5, event.pageY - 5, this.viewOptions);
+        // this.contextMenuView.toggleMenu('show');
+        // this.contextMenuView.hideDialog();
     }
 
-    emit(keyword: string, event: any) {
+    hide() {
+        this.contextMenuView.hide();
+    }
+
+    emit(keyword: string, event: MouseEvent) {
         switch (keyword) {
             case 'tapInfo':
                 if (this.menuLocation)
@@ -60,9 +57,5 @@ export class ContextMenuControl implements IObserver {
             default:
                 break;
         }
-    }
-
-    toggleMenu(keyword: string) {
-        this.contextMenuView.toggleMenu(keyword);
     }
 }

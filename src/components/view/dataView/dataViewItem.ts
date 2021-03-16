@@ -23,6 +23,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
     hammerview: HammerManager;
     pullWidth = 30;
     selected = false;
+    pristine = true;
 
     private subscribers: Array<IObserver> = [];
 
@@ -34,9 +35,9 @@ export class DataViewItem extends HTMLElement implements IObservable {
 
         this.oncontextmenu = (event) => this.publish('contextMenu', event);
         this.hammerview = new Hammer(this);
-        // this.hammerview.on('pan',(event) => console.log(event))
-
-        this.hammerview.on('tap', this.onSelect.bind(this));
+        this.onmousedown = (event) => this.publish('onSelect', event);
+        this.onmouseup = (event) => this.publish('onUnselect', event);
+        // this.hammerview.on('tap', this.onSelect.bind(this));
         this.hammerview.on('panstart', (event) => this.publish('panstartitem', event));
         this.hammerview.on('pan', (event) => this.publish('panitem', event));
         this.hammerview.on('panend', (event) => this.publish('panenditem', event));
@@ -83,7 +84,8 @@ export class DataViewItem extends HTMLElement implements IObservable {
         this.canChangeLength = element.canChangeLength;
 
         this.id = `${element.id}`;
-        this.onclick = (ev: MouseEvent) => console.log(`${ev} clicked`);
+
+        // this.onclick = (ev: MouseEvent) => console.log(`${ev} clicked`);
         this.content.innerHTML = element.content.text;
         this.updateTime(element.start, element.end, start, end);
     }
@@ -137,8 +139,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
         this.publish('unselect', null);
     }
 
-    private onSelect(event: HammerInput) {
-        console.log('onSelect');
+    private onSelect(event: MouseEvent) {
         this.publish('onSelect', event);
     }
 

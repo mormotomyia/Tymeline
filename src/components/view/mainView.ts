@@ -38,7 +38,8 @@ export class MainView extends HTMLElement implements IObservable {
         // FIXME THESE EVENTS NEED TO BE IN THE MAINVIEW AND NEED TO BE BUBBLED UP TO THIS COMPONENT VIA THE OBSERVABLE!
 
         const hammerview = new Hammer(this);
-        hammerview.on('tap', (event) => this.publish('tap', event));
+        this.onmousedown = (event) => this.publish('tap', event);
+        // hammerview.on('tap', (event) => this.publish('tap', event));
         hammerview.on('pan', (event) => this.publish('pan', event));
         hammerview.on('panstart', (event) => this.publish('panstart', event));
         hammerview.on('panend', (event) => this.publish('panend', event));
