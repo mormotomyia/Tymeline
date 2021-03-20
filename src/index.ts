@@ -95,4 +95,17 @@ bg.setTable([
     },
 ]);
 
+// const log = document.createElement('p');
+// const input = document.createElement('input');
+// rootElement.appendChild(log);
+// rootElement.appendChild(input);
+
+// // const log = document.getElementById('values');
+// input.oninput = (event) => updateValue(event);
+// // input.addEventListener('input', updateValue);
+
+// function updateValue(e) {
+//     log.textContent = e.target.value;
+// }
+
 // bg.updateTable({1:{length:3600*48,content:{text:'asdff'},start:0},2:{length:500*3600,content:{text:'asdf'},start:5}})

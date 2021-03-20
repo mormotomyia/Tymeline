@@ -158,6 +158,8 @@ export class MainControl implements IMainControl {
 
     private changeZoom(event: WheelEvent) {
         event.preventDefault();
+        // console.log(event.offsetX);
+        // console.log(event.deltaY);
         this.timelineControl.updateScale('zoom', event.deltaY, event.offsetX);
         this.render();
     }

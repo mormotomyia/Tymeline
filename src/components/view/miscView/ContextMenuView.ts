@@ -1,9 +1,11 @@
 import { CustomHTMLElement, CustomNoTemplateHTMLElement } from 'customhtmlbase';
 import dialogPolyfill from 'dialog-polyfill';
 import { timeStamp } from 'node:console';
+import { ITableData } from '../../../interfaces/IObject';
 import { IObservable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
 import { ContextMenuControl, IContextMenuView } from '../../control/ContextMenuControl';
+import { ISharedState } from '../../control/MainControl';
 import {
     CustomButton,
     CustomButtonBase,
@@ -22,14 +24,15 @@ import {
 export class ContextMenuView extends HTMLElement implements IContextMenuView {
     dialog: DialogComponentContainer;
     visible = false;
-    subMenu: IContextMenuView | undefined;
+    sharedstate: ISharedState;
 
     // contextMenu: HTMLDivElement = document.createElement('div');
     rootElement: HTMLElement;
     subscribers: Array<IObserver> = [];
 
-    constructor(rootElement: HTMLElement) {
+    constructor(rootElement: HTMLElement, sharedState: ISharedState) {
         super();
+        this.sharedstate = sharedState;
         this.rootElement = rootElement;
         this.dialog = new DialogComponentContainer();
         this.appendChild(this.dialog);
@@ -114,7 +117,12 @@ export class ContextMenuView extends HTMLElement implements IContextMenuView {
 
     renderDialog(template: typeof DialogComponent, id: string) {
         // here I probably need different Dialogs but lets see
-        this.dialog.render(template, id);
+        console.log('render dialog');
+        console.log(this.sharedstate);
+        const contextItem = this.sharedstate.visibleElements.filter(
+            (element: ITableData) => element.id === id
+        );
+        this.dialog.render(template, id, contextItem[0]);
 
         // this.appendChild(this.dialog);
     }

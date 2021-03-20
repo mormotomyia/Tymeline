@@ -63,12 +63,19 @@ export class TimelineControl implements ITimelineControl {
                 break;
             case 'zoom':
                 // zoom in = negative!
-                console.log(this.timelineView.getBoundingClientRect().width);
+
                 if (a !== undefined && b !== undefined) {
                     const zoom = this.timeframe / (1000 * 10);
+
                     const factor =
                         <number>b / this.timelineView.getBoundingClientRect().width;
                     a = a > 0 ? 1 : -1;
+
+                    // console.log(zoom);
+                    // console.log(factor);
+                    // console.log(-a * zoom * factor);
+                    // console.log(a * zoom * (1 - factor));
+
                     this.start = this.start.add(-a * zoom * factor, 'second');
 
                     this.end = this.end.add(a * zoom * (1 - factor), 'second');

@@ -21,7 +21,7 @@ export interface IBaseTableData {
     canChangeLength: boolean;
 }
 export interface ITableDataEntry extends IBaseTableData {
-    id: string;
+    readonly id: string;
 }
 
 export interface ITableData extends ITableDataEntry {

@@ -18,7 +18,6 @@ import { IContextMenuControl, ISharedState, MainControl } from './MainControl';
 
 export interface IContextMenuView extends IObservable, IObserver {
     visible: boolean;
-    subMenu: IContextMenuView | undefined;
     rootElement: HTMLElement;
     setMenu(
         viewOptions: Map<
@@ -29,6 +28,7 @@ export interface IContextMenuView extends IObservable, IObserver {
     hide(): void;
     render(x: number, y: number): void;
     renderDialog(template: typeof DialogComponent, id: string): void;
+    sharedstate: ISharedState;
 }
 export class ContextMenuControl implements IContextMenuControl {
     contextMenuView: IContextMenuView;
@@ -42,7 +42,7 @@ export class ContextMenuControl implements IContextMenuControl {
     constructor(rootElement: HTMLElement, sharedState: ISharedState) {
         this.sharedState = sharedState;
         // this needs to be an interface
-        this.contextMenuView = new ContextMenuView(rootElement);
+        this.contextMenuView = new ContextMenuView(rootElement, this.sharedState);
 
         this.viewOptions = new Map();
         this.viewOptions.set('info', { kind: CustomButton, dialog: DataInfoDialog });
