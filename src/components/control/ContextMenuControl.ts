@@ -1,33 +1,64 @@
-import { IContextMenuControl } from '../../interfaces/IContentMenuControl';
+import { IObservable } from '../../observer/Observable';
 import { IObserver, Observer } from '../../observer/Observer';
-import { CustomButton, CustomSubMenuButton } from '../custom-components/customButton';
-import { ContextMenuView, IContextMenuView } from '../view/miscView/ContextMenuView';
-import { ISharedState } from './MainControl';
+import {
+    CustomButton,
+    CustomButtonBase,
+    CustomSubMenuButton,
+} from '../custom-components/customButton';
+import {
+    IDialogComponent,
+    DataInfoDialog,
+    DataAlignDialog,
+    DataDeleteDialog,
+    DataModifyDialog,
+    DialogComponent,
+} from '../custom-components/DialogComponents';
+import { ContextMenuView } from '../view/miscView/ContextMenuView';
+import { IContextMenuControl, ISharedState, MainControl } from './MainControl';
 
+export interface IContextMenuView extends IObservable, IObserver {
+    visible: boolean;
+    subMenu: IContextMenuView | undefined;
+    rootElement: HTMLElement;
+    setMenu(
+        viewOptions: Map<
+            string,
+            { kind: typeof CustomButtonBase; dialog: typeof DialogComponent }
+        >
+    ): void;
+    hide(): void;
+    render(x: number, y: number): void;
+    renderDialog(template: typeof DialogComponent, id: string): void;
+}
 export class ContextMenuControl implements IContextMenuControl {
     contextMenuView: IContextMenuView;
-    menuLocation: HTMLElement | undefined;
+    targetItem: HTMLElement | undefined;
     sharedState: ISharedState;
-    viewOptions: { name: string; kind: typeof CustomButton }[];
+    viewOptions: Map<
+        string,
+        { kind: typeof CustomButtonBase; dialog: typeof DialogComponent }
+    >;
 
     constructor(rootElement: HTMLElement, sharedState: ISharedState) {
         this.sharedState = sharedState;
+        // this needs to be an interface
         this.contextMenuView = new ContextMenuView(rootElement);
-        this.viewOptions = [
-            { name: 'Info', kind: CustomButton },
-            { name: 'Modify', kind: CustomButton },
-            { name: 'Delete', kind: CustomButton },
-            { name: 'Align', kind: CustomSubMenuButton },
-        ];
 
+        this.viewOptions = new Map();
+        this.viewOptions.set('info', { kind: CustomButton, dialog: DataInfoDialog });
+        this.viewOptions.set('modify', { kind: CustomButton, dialog: DataModifyDialog });
+        this.viewOptions.set('delete', { kind: CustomButton, dialog: DataDeleteDialog });
+        this.viewOptions.set('align', { kind: CustomButton, dialog: DataAlignDialog });
         this.contextMenuView.subscribe(this);
+        this.contextMenuView.setMenu(this.viewOptions);
+    }
+    public setContextMenu(event: MouseEvent) {
+        this.targetItem = <HTMLElement>event.target;
+        this.contextMenuView.render(event.pageX - 5, event.pageY - 5);
     }
 
-    public setContextMenu(event: MouseEvent) {
-        this.menuLocation = <HTMLElement>event.target;
-        this.contextMenuView.setMenu(event.pageX - 5, event.pageY - 5, this.viewOptions);
-        // this.contextMenuView.toggleMenu('show');
-        // this.contextMenuView.hideDialog();
+    get visible() {
+        return this.contextMenuView.visible;
     }
 
     hide() {
@@ -36,21 +67,32 @@ export class ContextMenuControl implements IContextMenuControl {
 
     emit(keyword: string, event: MouseEvent) {
         switch (keyword) {
-            case 'tapInfo':
-                if (this.menuLocation)
-                    this.contextMenuView.renderDialog('Info', this.menuLocation.id);
+            case 'tapinfo':
+                this.contextMenuView.renderDialog(
+                    this.viewOptions.get('info').dialog,
+                    this.targetItem.id
+                );
                 break;
-            case 'tapModify':
-                if (this.menuLocation)
-                    this.contextMenuView.renderDialog('Modify', this.menuLocation.id);
+            case 'tapmodify':
+                if (this.targetItem)
+                    this.contextMenuView.renderDialog(
+                        this.viewOptions.get('modify').dialog,
+                        this.targetItem.id
+                    );
                 break;
-            case 'tapDelete':
-                if (this.menuLocation)
-                    this.contextMenuView.renderDialog('Delete', this.menuLocation.id);
+            case 'tapdelete':
+                if (this.targetItem)
+                    this.contextMenuView.renderDialog(
+                        this.viewOptions.get('delete').dialog,
+                        this.targetItem.id
+                    );
                 break;
-            case 'tapAlign':
-                if (this.menuLocation)
-                    this.contextMenuView.renderSubMenu('Align', this.menuLocation.id);
+            case 'tapalign':
+                if (this.targetItem)
+                    this.contextMenuView.renderDialog(
+                        this.viewOptions.get('align').dialog,
+                        this.targetItem.id
+                    );
                 // this.contextMenuView.renderDialog('Align', this.menuLocation.id);
                 break;
 

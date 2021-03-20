@@ -1,13 +1,15 @@
 import { IObserver } from './Observer';
 
 export interface IObservable {
-    subscribe: Function;
-    unsubscribe: Function;
-    publish: Function;
+    subscribers: Array<IObserver>;
+    subscribe(observer: IObserver): void;
+    unsubscribe(observer: IObserver): void;
+    publish(keyword: string, data: any): void;
 }
 
 export class Observable implements IObservable {
-    private subscribers: Array<IObserver> = [];
+    subscribers: Array<IObserver> = [];
+
     public subscribe(observer: IObserver) {
         //we could check to see if it is already subscribed
         this.subscribers.push(observer);

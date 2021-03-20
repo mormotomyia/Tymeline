@@ -2,9 +2,9 @@ import dayjs from 'dayjs';
 import { ITimelineView } from '../model/ViewPresenter/ITimelineView';
 import { TimelineView } from '../view/timeline/TimelineView';
 import TimeStep from '../view/timeline/TimeStep';
-import { ISharedState } from './MainControl';
+import { ISharedState, ITimelineControl } from './MainControl';
 
-export class TimelineControl {
+export class TimelineControl implements ITimelineControl {
     start: dayjs.Dayjs;
     end: dayjs.Dayjs;
 
@@ -14,28 +14,27 @@ export class TimelineControl {
 
     constructor(
         rootElement: HTMLElement,
+        timelineView: ITimelineView,
         sharedState: ISharedState,
         options: { start: dayjs.Dayjs; end: dayjs.Dayjs }
     ) {
+        this.timelineView = timelineView;
         this.sharedState = sharedState;
         this.timestep = this.sharedState.timestep;
-        // this.timestep = new TimeStep(dayjs(), dayjs(), 1); // this may not be the optimal default value, please verify if this is ever accessable, even only by accident
+
         const arg = document.createElement('div');
 
-        this.timelineView = new TimelineView(this.timestep);
         rootElement.appendChild(this.timelineView.node);
-
         this.start = options.start;
         this.end = options.end;
         this.timelineView.on('contextmenu', (event: Event) => event.preventDefault());
-        // this.timelineView.oncontextmenu = (event: Event) => event.preventDefault();
     }
 
-    get timeframe() {
+    get timeframe(): number {
         return this.end.diff(this.start);
     }
 
-    centerOnToday() {
+    private centerOnToday() {
         const now = dayjs();
         const left = now.subtract(this.timeframe / (1000 * 2), 'second');
         const right = now.add(this.timeframe / (1000 * 2), 'second');

@@ -1,32 +1,26 @@
-import { CustomHTMLElement } from 'customhtmlbase';
+import { CustomHTMLElement, CustomNoTemplateHTMLElement } from 'customhtmlbase';
 import dialogPolyfill from 'dialog-polyfill';
+import { timeStamp } from 'node:console';
 import { IObservable } from '../../../observer/Observable';
 import { IObserver } from '../../../observer/Observer';
-import { ContextMenuControl } from '../../control/ContextMenuControl';
-import { CustomButton, CustomSubMenuButton } from '../../custom-components/customButton';
+import { ContextMenuControl, IContextMenuView } from '../../control/ContextMenuControl';
+import {
+    CustomButton,
+    CustomButtonBase,
+    CustomSubMenuButton,
+} from '../../custom-components/customButton';
+import {
+    DialogComponent,
+    DialogComponentContainer,
+} from '../../custom-components/DialogComponents';
 
-export interface IContextMenuView extends IObservable, IObserver {
-    visible: boolean;
-    subMenu: IContextMenuView | undefined;
-    rootElement: HTMLElement;
-    setMenu(
-        x: number,
-        y: number,
-        args: Array<{ name: string; kind: typeof CustomButton }>
-    ): void;
-    hide(): void;
-    renderDialog(content: string, id: string): void;
-    renderSubMenu(content: string, id: string): void;
-}
-
-@CustomHTMLElement({
+@CustomNoTemplateHTMLElement({
     selector: 'contextmenu-view',
-    template: '<div>',
+
     useShadow: false,
-    style: '',
 })
 export class ContextMenuView extends HTMLElement implements IContextMenuView {
-    dialog: HTMLDialogElement;
+    dialog: DialogComponentContainer;
     visible = false;
     subMenu: IContextMenuView | undefined;
 
@@ -36,9 +30,9 @@ export class ContextMenuView extends HTMLElement implements IContextMenuView {
 
     constructor(rootElement: HTMLElement) {
         super();
-        this.dialog = document.createElement('dialog');
-        dialogPolyfill.registerDialog(this.dialog);
         this.rootElement = rootElement;
+        this.dialog = new DialogComponentContainer();
+        this.appendChild(this.dialog);
     }
     public subscribe(observer: IObserver) {
         this.subscribers.push(observer);
@@ -56,48 +50,53 @@ export class ContextMenuView extends HTMLElement implements IContextMenuView {
     }
 
     setMenu(
-        x: number,
-        y: number,
-        args: Array<{ name: string; kind: typeof CustomButton }>
+        viewOptions: Map<
+            string,
+            { kind: typeof CustomButtonBase; dialog: typeof DialogComponent }
+        >
     ) {
-        this.createContextMenu(args);
-        this.style.left = `${x}px`;
-        this.style.top = `${y}px`;
-        this.rootElement.appendChild(this);
-        this.visible = true;
+        this.createContextMenu(viewOptions);
     }
 
     emit(keyword: string, data: any): void {
         this.publish(keyword, data);
     }
 
-    hide() {
-        if (this.rootElement.getElementsByTagName('contextmenu-view').length !== 0)
-            this.rootElement.removeChild(this);
-        this.hideDialog();
-        this.visible = false;
-        this.rootElement.removeChild(this);
+    render(x: number, y: number) {
+        this.rootElement.appendChild(this);
+        this.style.left = `${x}px`;
+        this.style.top = `${y}px`;
+        this.visible = true;
     }
 
-    fireOnContext(event: MouseEvent) {}
+    hide() {
+        console.log('hide context ');
+        if (this.visible) {
+            this.dialog.hide();
+            this.visible = false;
+            this.rootElement.removeChild(this);
+        }
+    }
+
+    fireOnContext(event: MouseEvent) {
+        console.log(event);
+    }
 
     private createContextMenu(
-        buttons: Array<{
-            name: string;
-            kind: typeof CustomButton | typeof CustomSubMenuButton;
-        }>
+        viewOptions: Map<
+            string,
+            { kind: typeof CustomButtonBase; dialog: typeof DialogComponent }
+        >
     ) {
         this.className = 'context-menu';
         this.style.width = 'inherit';
-        const contextmenuItems = [];
-        buttons.forEach((element) => {
-            const item = new element.kind(element.name);
+        viewOptions.forEach((value, key) => {
+            const item = new value.kind(key);
             item.className = 'context-button';
             item.hammerEvents.on('tap', (event) =>
                 this.publish(`tap${event.target.innerText}`, event)
             );
             this.append(item);
-            // contextmenuItems.push(new element.kind(element.name));
         });
 
         this.style.zIndex = '999';
@@ -108,32 +107,15 @@ export class ContextMenuView extends HTMLElement implements IContextMenuView {
         this.style.borderRadius = '2px';
         this.style.position = 'absolute';
         this.style.boxShadow = '5px 5px 5px rgb(150,150,150)';
-        this.style.height = `${buttons.length * 34}px`; // 136 // 102 // 68
+        this.style.height = `${viewOptions.size * 34}px`; // 136 // 102 // 68
 
         //34 // 36
     }
 
-    renderSubMenu(content: string, id: string) {
-        if (this.subMenu) {
-            console.log(this.subMenu);
-            this.subMenu.hide();
-            this.subMenu = undefined;
-
-            // delete this.subMenu;
-        } else {
-            this.subMenu = new ContextMenuView(this);
-            // this.subMenu.setMenu([{ name: 'Info', kind: CustomButton }]);
-            // this.subMenu.subscribe(this);
-            // this.appendChild(this.subMenu);
-        }
-    }
-
-    renderDialog(content: string, id: string) {
+    renderDialog(template: typeof DialogComponent, id: string) {
         // here I probably need different Dialogs but lets see
+        this.dialog.render(template, id);
 
-        const template = `<div><h2>${content}</h2> ${id} </div>`;
-        this.dialog.innerHTML = template;
-        this.appendChild(this.dialog);
-        this.dialog.show();
+        // this.appendChild(this.dialog);
     }
 }

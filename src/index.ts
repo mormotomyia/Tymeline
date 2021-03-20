@@ -1,11 +1,47 @@
 import dayjs from 'dayjs';
+import { ContextMenuControl } from './components/control/ContextMenuControl';
+import { DataControl } from './components/control/DataControl';
+import { MainControl, SharedState } from './components/control/MainControl';
+import { TimelineControl } from './components/control/TimelineControl';
 
 import { MormoTable } from './components/mormoTable';
+import { MormoDataView } from './components/view/dataView/dataView';
+import { MainView } from './components/view/mainView';
+import { TimelineView } from './components/view/timeline/TimelineView';
 
-const bg = new MormoTable(document.getElementsByTagName('body')[0], {
+const sharedState = new SharedState();
+const root = document.getElementsByTagName('body')[0];
+const options = {
     size: { width: 1400, height: 400 },
     colorschema: { text: 'black', background: 'lightblue', borders: 'red' },
-});
+};
+
+const timelineOptions = {
+    ...options,
+    start: dayjs().subtract(7, 'day'),
+    end: dayjs().add(7, 'day'),
+};
+const mainView = new MainView(root, options);
+
+const dataView = new MormoDataView(mainView);
+const timelineView = new TimelineView(sharedState.timestep);
+const timelineControl = new TimelineControl(
+    mainView,
+    timelineView,
+    sharedState,
+    timelineOptions
+);
+const dataControl = new DataControl(dataView, sharedState);
+const contextMenuControl = new ContextMenuControl(mainView, sharedState);
+
+const mainControl = new MainControl(
+    mainView,
+    contextMenuControl,
+    timelineControl,
+    dataControl
+);
+
+const bg = new MormoTable(root, mainControl, options);
 bg.start();
 
 bg.setTable([
@@ -59,8 +95,4 @@ bg.setTable([
     },
 ]);
 
-let now = dayjs();
-console.log(now.format());
-now.second(0);
-console.log(now.format());
 // bg.updateTable({1:{length:3600*48,content:{text:'asdff'},start:0},2:{length:500*3600,content:{text:'asdf'},start:5}})

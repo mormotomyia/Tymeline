@@ -1,13 +1,14 @@
 import { CustomNoTemplateHTMLElement } from 'customhtmlbase';
 import { IObservable, Observable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
+import { IMainView } from '../control/MainControl';
 import { CustomButton } from '../custom-components/customButton';
 
 @CustomNoTemplateHTMLElement({
     selector: 'main-view',
     useShadow: false,
 })
-export class MainView extends HTMLElement implements IObservable {
+export class MainView extends HTMLElement implements IMainView {
     subscribers: Array<IObserver> = [];
     constructor(root: HTMLElement, tableOptions?: any) {
         super();

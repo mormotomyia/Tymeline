@@ -6,7 +6,7 @@ import { IObservable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
 import { DataViewItem } from '../view/dataView/dataViewItem';
 import { snap } from '../../util/snap';
-import { ISharedState } from './MainControl';
+import { IDataControl, ISharedState } from './MainControl';
 import TimeStep from '../view/timeline/TimeStep';
 import { IDataView } from '../model/ViewPresenter/IDataView';
 
@@ -55,9 +55,6 @@ export class DraggedItem implements IDraggedItem {
     }
 }
 
-export interface IDataControl extends IObservable, IObserver {
-    render(start: dayjs.Dayjs, end: dayjs.Dayjs): void;
-}
 export class DataControl implements IDataControl {
     tableData: Map<string, TableData> = new Map();
     dataView: IDataView;
@@ -71,10 +68,11 @@ export class DataControl implements IDataControl {
     sharedState: ISharedState;
     timestep: TimeStep;
 
-    constructor(rootElement: HTMLElement, sharedState: ISharedState) {
+    constructor(dataView: IDataView, sharedState: ISharedState) {
         this.sharedState = sharedState;
         this.timestep = this.sharedState.timestep;
-        this.dataView = new MormoDataView(rootElement);
+        this.dataView = dataView;
+        // this.dataView = new MormoDataView(rootElement);
         this.dataView.subscribe(this);
     }
 
@@ -101,9 +99,11 @@ export class DataControl implements IDataControl {
                 this.removeSelection();
                 break;
             case 'onSelect':
+                console.log(data);
                 this.onSelect(<MouseEvent>data);
                 break;
             case 'onUnselect':
+                console.log(data);
                 this.onUnselect(<MouseEvent>data);
                 break;
             case 'panstartitem':
@@ -126,7 +126,9 @@ export class DataControl implements IDataControl {
     }
 
     private onUnselect(event: MouseEvent) {
+        // this is really a bad way of doing it!
         const dataViewItem = <DataViewItem>event.target;
+        console.log(dataViewItem.pristine);
         if (!dataViewItem.pristine) {
             dataViewItem.unselect();
             this.selected.delete(dataViewItem.id);
@@ -134,10 +136,10 @@ export class DataControl implements IDataControl {
         } else {
             dataViewItem.pristine = false;
         }
+        console.log(dataViewItem.pristine);
     }
 
     private onSelect(event: MouseEvent) {
-        console.log(this.tableData);
         const dataViewItem = <DataViewItem>event.target;
         const data = <ITableData>this.tableData.get(dataViewItem.id);
 
@@ -160,8 +162,6 @@ export class DataControl implements IDataControl {
             );
             dataViewItem.select();
         }
-        console.log(`selected ${dataViewItem.id}`);
-        console.log(this.selected);
     }
     public removeSelection() {
         this.selected.forEach((value) => value.dom.unselect());
@@ -239,7 +239,6 @@ export class DataControl implements IDataControl {
     private moveItem(value: IDraggedItem, delta: number) {
         value.tempStart = value.tempStart.add(delta, 'second');
         value.tempEnd = value.tempEnd.add(delta, 'second');
-        console.log(delta);
         const snappedStart = snap(
             value.tempStart,
             this.timestep.scale,
@@ -283,15 +282,7 @@ export class DataControl implements IDataControl {
 
                 const offset = draggedItem.originalStart.diff(snappedStart, 'seconds');
 
-                // draggedItem.dom.updateTime(
-                //     snappedStart,
-                //     snappedStart.add(draggedItem.length, 'second'),
-                //     this.start,
-                //     this.end
-                // );
                 this.tableData.get(draggedItem.id)?.move(-offset);
-                // draggedItem.tempStart = draggedItem.start;
-                // draggedItem.tempEnd = draggedItem.end;
             } else if (this.moveRight(event, draggedItem)) {
                 // right
                 const snappedEnd = snap(
@@ -301,13 +292,6 @@ export class DataControl implements IDataControl {
                 );
 
                 if (snappedEnd.diff(draggedItem.tempStart, 'second') > 0) {
-                    console.log('ASD');
-                    // draggedItem.dom.updateTime(
-                    //     draggedItem.tempStart,
-                    //     snappedEnd,
-                    //     this.start,
-                    //     this.end
-                    // );
                     this.tableData
                         .get(draggedItem.id)
                         ?.changeLength(
@@ -394,15 +378,13 @@ export class DataControl implements IDataControl {
             );
     }
 
-    private updateTable(objects: Array<ITableData>) {
+    updateTable(objects: Array<ITableData>) {
         objects.forEach((element) => {
             this.updateTableItem(element);
         });
-
-        console.log(this.tableData);
     }
 
-    private setTable(objects: Array<ITableData>) {
+    setTable(objects: Array<ITableData>) {
         this.tableData.clear();
 
         this.updateTable(objects);

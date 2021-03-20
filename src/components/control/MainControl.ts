@@ -1,15 +1,17 @@
-import dayjs from 'dayjs';
-import { IContextMenuControl } from '../../interfaces/IContentMenuControl';
+import dayjs, { Dayjs } from 'dayjs';
+
 import { ITableData } from '../../interfaces/IObject';
+import { IObservable, Observable } from '../../observer/Observable';
 import { IObserver, Observer } from '../../observer/Observer';
 import { CustomButton } from '../custom-components/customButton';
 import { TableData } from '../model/TableData';
+import { IMainControl } from '../mormoTable';
 import { MormoDataView } from '../view/dataView/dataView';
 import { MainView } from '../view/mainView';
 import { TimelineView } from '../view/timeline/TimelineView';
 import { TimeStep } from '../view/timeline/TimeStep';
-import { ContextMenuControl } from './ContextMenuControl';
-import { DataControl, IDataControl } from './DataControl';
+import { ContextMenuControl, IContextMenuView } from './ContextMenuControl';
+import { DataControl } from './DataControl';
 import { TimelineControl } from './TimelineControl';
 
 export interface ISharedState {
@@ -17,41 +19,73 @@ export interface ISharedState {
     visibleElements: Array<ITableData>;
 }
 
-export class MainControl implements IObserver {
-    mainView: MainView;
-    timelineControl: TimelineControl;
+export class SharedState implements ISharedState {
+    timestep: TimeStep;
+    visibleElements: Array<ITableData>;
+    constructor() {
+        this.timestep = new TimeStep(dayjs(), dayjs(), 1);
+        this.visibleElements = [];
+    }
+}
+
+export interface IMainView extends IObservable, HTMLElement {
+    render(): void;
+}
+
+export interface ITimelineControl {
+    start: dayjs.Dayjs;
+    end: dayjs.Dayjs;
+    timeframe: number;
+    updateScale(type: 'absolute'): void;
+    updateScale(type: 'stepsize'): void;
+    updateScale(type: 'linear', a: number): void;
+    updateScale(type: 'zoom', a: number, b: number): void;
+    updateScale(type: 'linear', a: dayjs.Dayjs, b: dayjs.Dayjs): void;
+    render(): void;
+}
+
+export interface IDataControl extends IObservable, IObserver {
+    setTable(arg: Array<ITableData>): void;
+    updateTable(arg: Array<ITableData>): void;
+    render(start: dayjs.Dayjs, end: dayjs.Dayjs): void;
+}
+
+export interface IContextMenuControl extends IObserver {
+    visible: boolean;
+    contextMenuView: IContextMenuView;
+    targetItem: HTMLElement | undefined;
+    sharedState: ISharedState;
+    setContextMenu(
+        event: MouseEvent,
+        args?: Array<{ name: string; kind: typeof CustomButton }>
+    ): void;
+    hide(): void;
+}
+
+export class MainControl implements IMainControl {
+    mainView: IMainView;
+    timelineControl: ITimelineControl;
     dataControl: IDataControl;
     contextMenuControl: IContextMenuControl;
     deltaX = 0;
     draggable = true;
-    sharedState: ISharedState;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    constructor(root: HTMLElement, options: Object) {
-        const dataOptions = {};
-        const timelineOptions = {
-            ...options,
-            start: dayjs().subtract(7, 'day'),
-            end: dayjs().add(7, 'day'),
-        };
-
-        this.sharedState = {
-            timestep: new TimeStep(dayjs(), dayjs(), 1),
-            visibleElements: [],
-        };
-
-        this.mainView = new MainView(root, options);
+    constructor(
+        mainView: IMainView,
+        contextMenuControl: IContextMenuControl,
+        timelineControl: ITimelineControl,
+        dataControl: IDataControl
+    ) {
+        this.mainView = mainView;
         this.mainView.subscribe(this);
 
         // this needs to be moved to the respective control points?
 
-        this.timelineControl = new TimelineControl(
-            this.mainView,
-            this.sharedState,
-            timelineOptions
-        );
-        this.dataControl = new DataControl(this.mainView, this.sharedState);
-        this.contextMenuControl = new ContextMenuControl(this.mainView, this.sharedState);
+        this.timelineControl = timelineControl;
+        this.dataControl = dataControl;
+
+        this.contextMenuControl = contextMenuControl;
 
         this.dataControl.subscribe(this);
         // this.timelineControl
@@ -60,22 +94,23 @@ export class MainControl implements IObserver {
     emit(keyword: string, event: HammerInput | Event): void {
         switch (keyword) {
             case 'tap':
-                console.log(event.target.tagName);
-                console.log('click!');
-                if (event.target.tagName == 'DATA-VIEW') {
-                    this.contextMenuControl.toggleMenu('hide');
+                if (event.target != null) {
+                    const target = <HTMLElement>event.target;
 
-                    this.dataControl.emit('removeSelection', null);
+                    if (target.tagName == 'DATA-VIEW') {
+                        if (this.contextMenuControl.visible) {
+                            this.contextMenuControl.hide();
+                        }
+                        this.dataControl.emit('removeSelection', null);
+                    }
                 }
                 break;
             case 'panstartitem':
-                console.log('here!');
                 this.draggable = false;
                 break;
             case 'panitem':
                 break;
             case 'panenditem':
-                console.log('here?');
                 this.draggable = true;
                 break;
             case 'pan':
@@ -92,7 +127,8 @@ export class MainControl implements IObserver {
                 break;
             case 'contextMenu':
                 event.preventDefault();
-                this.contextMenuControl.setContextMenu(<Event>event);
+                // console.log('open Contextmenu');
+                this.contextMenuControl.setContextMenu(<MouseEvent>event);
                 break;
             default:
                 break;
@@ -106,7 +142,7 @@ export class MainControl implements IObserver {
 
     dragEnd(_: any) {}
 
-    drag(event: HammerInput) {
+    private drag(event: HammerInput) {
         const target = <HTMLElement>event.srcEvent.target;
         if (target.classList.contains('mormo-items')) {
             let deltaX = event.deltaX;
@@ -120,7 +156,7 @@ export class MainControl implements IObserver {
         }
     }
 
-    changeZoom(event: WheelEvent) {
+    private changeZoom(event: WheelEvent) {
         event.preventDefault();
         this.timelineControl.updateScale('zoom', event.deltaY, event.offsetX);
         this.render();
@@ -130,5 +166,13 @@ export class MainControl implements IObserver {
         this.mainView.render();
         this.timelineControl.render();
         this.dataControl.render(this.timelineControl.start, this.timelineControl.end);
+    }
+
+    setTable(argument: Array<ITableData>) {
+        this.dataControl.setTable(argument);
+    }
+
+    updateTable(argument: Array<ITableData>) {
+        this.dataControl.updateTable(argument);
     }
 }

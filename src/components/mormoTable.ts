@@ -1,4 +1,4 @@
-import { IProps } from '../interfaces/IObject';
+import { IProps, ITableData } from '../interfaces/IObject';
 import { ITableOptions } from '../interfaces/ITableOptions';
 
 import { TimelineView, Transform } from './view/timeline/TimelineView';
@@ -8,21 +8,31 @@ import { DataControl } from './control/DataControl';
 
 import { MainControl } from './control/MainControl';
 import dayjs from 'dayjs';
+import { IObserver } from '../observer/Observer';
 
+export interface IMainControl extends IObserver {
+    render(): void;
+    setTable(argument: Array<ITableData>): void;
+    updateTable(argument: Array<ITableData>): void;
+}
 export class MormoTable {
     tableOptions: ITableOptions;
 
     props: IProps;
     root: HTMLElement;
-    initialized: boolean = false;
+    initialized = false;
 
-    mainControl: MainControl;
+    mainControl: IMainControl;
 
-    constructor(container: HTMLElement, options: ITableOptions) {
+    constructor(
+        container: HTMLElement,
+        mainControl: IMainControl,
+        options: ITableOptions
+    ) {
         this.root = container;
         this.props = { domItems: new DomItems(), dom: {} };
         this.tableOptions = options;
-
+        this.mainControl = mainControl;
         if (this.tableOptions?.dates === undefined) {
             this.tableOptions.dates = {
                 start: new Date(new Date().getTime() - 7 * 24 * 3600 * 1000),
@@ -30,7 +40,7 @@ export class MormoTable {
             };
         }
 
-        this.mainControl = new MainControl(container, options);
+        // this.mainControl = new MainControl(container, options);
         this.render();
         // this.dataManager = new DataManager(this.props, this.componentCollection);
 
@@ -43,11 +53,11 @@ export class MormoTable {
     }
 
     setTable(argument: any) {
-        this.mainControl.dataControl.setTable(argument);
+        this.mainControl.setTable(argument);
         this.render();
     }
     updateTable(argument: any) {
-        this.mainControl.dataControl.updateTable(argument);
+        this.mainControl.updateTable(argument);
         this.render();
     }
 
