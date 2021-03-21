@@ -1,24 +1,7 @@
 import dayjs from 'dayjs';
 import { ITableDataEntry } from '../../interfaces/IObject';
-
-export interface IAuthService {
-    token: string;
-}
-
-export interface IDataService {
-    url: string;
-    getTableEntry(): Promise<Array<ITableDataEntry>>;
-    getPartialTableEntry(
-        start: dayjs.Dayjs,
-        end: dayjs.Dayjs
-    ): Promise<Array<ITableDataEntry>>;
-    sendTableEntry(data: Array<ITableDataEntry>): Promise<boolean>;
-    sendPartialTableEntry(
-        data: Array<ITableDataEntry>,
-        start: dayjs.Dayjs,
-        end: dayjs.Dayjs
-    ): Promise<boolean>;
-}
+import { IAuthService } from './serviceSpec/AuthServiceSpec';
+import { IDataService } from './serviceSpec/DataServiceSpec';
 
 export class DataService implements IDataService {
     url: string;
@@ -63,7 +46,7 @@ export class DataService implements IDataService {
 
     async sendTableEntry(data: Array<ITableDataEntry>): Promise<boolean> {
         const response = await fetch(this.url + '/tableentry/post/all', {
-            method: 'GET',
+            method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
             credentials: 'include',
@@ -82,7 +65,7 @@ export class DataService implements IDataService {
         end: dayjs.Dayjs
     ): Promise<boolean> {
         const response = await fetch(this.url + '/tableentry/post/partial', {
-            method: 'GET',
+            method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
             credentials: 'include',

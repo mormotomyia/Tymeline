@@ -8,12 +8,12 @@ export class CustomButtonBase extends HTMLButtonElement {
         super();
         this.hammerEvents = new Hammer(<HTMLElement>this);
         this.innerHTML = `${template}`;
-        this.style.boxShadow = 'rgb(250,50,250) 0px 2px 0px';
-        this.style.backgroundColor = 'white';
-        this.style.border = 'none';
-        this.style.width = 'inherit';
-        this.style.height = '30px';
-        this.style.margin = '2px 0 2px 0';
+        // this.style.boxShadow = 'rgb(250,50,250) 0px 2px 0px';
+        // this.style.backgroundColor = 'white';
+        // this.style.border = 'none';
+        // this.style.width = 'inherit';
+        // this.style.height = '30px';
+        // this.style.margin = '2px 0 2px 0';
     }
 }
 

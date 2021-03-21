@@ -3,6 +3,7 @@ import { timeStamp } from 'node:console';
 import { ITableData } from '../../interfaces/IObject';
 import { IObservable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
+import { IDataService } from '../services/DataService';
 
 export interface IDialogComponent {
     ElementId: string | undefined;
@@ -18,6 +19,7 @@ export class DialogComponentContainer extends HTMLElement implements IObservable
     constructor() {
         super();
         this.style.display = 'none';
+        this.classList.add('dialog-container');
     }
 
     subscribers: Array<IObserver> = [];
@@ -43,15 +45,8 @@ export class DialogComponentContainer extends HTMLElement implements IObservable
             this.template = new template(id, contextItem);
             this.template.render();
             this.appendChild(this.template);
-            this.style.left = '30vw';
-            this.style.top = '10vw';
+
             this.style.display = 'block';
-            this.style.position = 'fixed';
-            this.style.backgroundColor = 'white';
-            this.style.borderRadius = '5px';
-            this.style.height = '40vw';
-            this.style.width = '40vw';
-            this.style.boxShadow = '2px 2px 2px  2px rgb(55,55,55)';
         }
     }
 
@@ -67,9 +62,11 @@ export class DialogComponent extends HTMLElement implements IDialogComponent {
     contextItem: ITableData;
     workingItem: ITableData;
     text!: HTMLInputElement;
-    constructor(id: string, contextItem: ITableData) {
+    dataService: IDataService;
+    constructor(id: string, contextItem: ITableData, dataService: IDataService) {
         super();
         this.ElementId = id;
+        this.dataService = dataService;
         this.contextItem = contextItem;
         this.workingItem = Object.assign({}, this.contextItem);
     }
@@ -99,8 +96,9 @@ export class DataInfoDialog extends DialogComponent {
     time!: HTMLInputElement;
     date!: HTMLInputElement;
     submit!: HTMLInputElement;
-    constructor(id: string, contextItem: ITableData) {
-        super(id, contextItem);
+
+    constructor(id: string, contextItem: ITableData, dataService: IDataService) {
+        super(id, contextItem, dataService);
         console.log(this.contextItem);
         // this.ElementId = id;
         // this.contextItem = contextItem
@@ -109,12 +107,33 @@ export class DataInfoDialog extends DialogComponent {
     render() {
         super.render();
         this.form = document.createElement('form');
+        this.form.classList.add('dialog-form');
         this.time = document.createElement('input');
+        this.time.classList.add('dialog-input');
         this.date = document.createElement('input');
+        this.date.classList.add('dialog-input');
         this.text = document.createElement('input');
+        this.text.classList.add('dialog-input');
+        // this.text.placeholder = '';
+        this.text.setAttribute('value', this.workingItem.content.text);
         this.submit = document.createElement('input');
+        this.submit.classList.add('dialog-input');
+
+        const p1 = document.createElement('p');
+        const p2 = document.createElement('p');
+        const p3 = document.createElement('p');
+        p1.classList.add('dialog-input');
+        p2.classList.add('dialog-input');
+        p3.classList.add('dialog-input');
+        p1.innerHTML = 'time';
+        this.form.appendChild(p1);
         this.form.appendChild(this.time);
+        p2.innerHTML = 'date';
+        this.form.appendChild(p2);
         this.form.appendChild(this.date);
+        p3.innerHTML = 'text';
+        this.form.appendChild(p3);
+
         this.form.appendChild(this.text);
         this.form.appendChild(this.submit);
         this.appendChild(this.form);
@@ -122,7 +141,9 @@ export class DataInfoDialog extends DialogComponent {
         this.submit.type = 'Submit';
         this.time.type = 'time';
         this.form.onsubmit = (event) => {
-            event.preventDefault(), console.log(event);
+            event.preventDefault();
+            console.log(event);
+            this.dataService;
         };
         this.text.oninput = (event) => this.change(event);
         this.time.oninput = (event) => this.change(event);
@@ -146,8 +167,8 @@ export class DataInfoDialog extends DialogComponent {
 })
 export class DataModifyDialog extends DialogComponent {
     ElementId: string;
-    constructor(id: string, contextItem: ITableData) {
-        super(id, contextItem);
+    constructor(id: string, contextItem: ITableData, dataService: IDataService) {
+        super(id, contextItem, dataService);
         this.ElementId = id;
     }
 }
@@ -158,8 +179,8 @@ export class DataModifyDialog extends DialogComponent {
 })
 export class DataDeleteDialog extends DialogComponent {
     ElementId: string;
-    constructor(id: string, contextItem: ITableData) {
-        super(id, contextItem);
+    constructor(id: string, contextItem: ITableData, dataService: IDataService) {
+        super(id, contextItem, dataService);
         this.ElementId = id;
     }
 }
@@ -170,8 +191,8 @@ export class DataDeleteDialog extends DialogComponent {
 })
 export class DataAlignDialog extends DialogComponent {
     ElementId: string;
-    constructor(id: string, contextItem: ITableData) {
-        super(id, contextItem);
+    constructor(id: string, contextItem: ITableData, dataService: IDataService) {
+        super(id, contextItem, dataService);
         this.ElementId = id;
     }
 }

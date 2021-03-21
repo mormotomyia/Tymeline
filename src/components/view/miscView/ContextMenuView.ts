@@ -15,6 +15,7 @@ import {
     DialogComponent,
     DialogComponentContainer,
 } from '../../custom-components/DialogComponents';
+import { IDataService } from '../../services/DataService';
 
 @CustomNoTemplateHTMLElement({
     selector: 'contextmenu-view',
@@ -25,13 +26,19 @@ export class ContextMenuView extends HTMLElement implements IContextMenuView {
     dialog: DialogComponentContainer;
     visible = false;
     sharedstate: ISharedState;
+    dataService: IDataService;
 
     // contextMenu: HTMLDivElement = document.createElement('div');
     rootElement: HTMLElement;
     subscribers: Array<IObserver> = [];
 
-    constructor(rootElement: HTMLElement, sharedState: ISharedState) {
+    constructor(
+        rootElement: HTMLElement,
+        sharedState: ISharedState,
+        dataService: IDataService
+    ) {
         super();
+        this.dataService = dataService;
         this.sharedstate = sharedState;
         this.rootElement = rootElement;
         this.dialog = new DialogComponentContainer();

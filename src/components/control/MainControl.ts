@@ -6,6 +6,7 @@ import { IObserver, Observer } from '../../observer/Observer';
 import { CustomButton } from '../custom-components/customButton';
 import { TableData } from '../model/TableData';
 import { IMainControl } from '../mormoTable';
+import { IDataService } from '../services/DataService';
 import { MormoDataView } from '../view/dataView/dataView';
 import { MainView } from '../view/mainView';
 import { TimelineView } from '../view/timeline/TimelineView';
@@ -51,6 +52,7 @@ export interface IDataControl extends IObservable, IObserver {
 }
 
 export interface IContextMenuControl extends IObserver {
+    dataService: IDataService;
     visible: boolean;
     contextMenuView: IContextMenuView;
     targetItem: HTMLElement | undefined;

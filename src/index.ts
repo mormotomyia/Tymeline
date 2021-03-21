@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime';
 import dayjs from 'dayjs';
 import { ContextMenuControl } from './components/control/ContextMenuControl';
 import { DataControl } from './components/control/DataControl';
@@ -5,9 +6,17 @@ import { MainControl, SharedState } from './components/control/MainControl';
 import { TimelineControl } from './components/control/TimelineControl';
 
 import { MormoTable } from './components/mormoTable';
+import { AuthService } from './components/services/AuthService';
+import { DataService } from './components/services/DataService';
 import { MormoDataView } from './components/view/dataView/dataView';
 import { MainView } from './components/view/mainView';
 import { TimelineView } from './components/view/timeline/TimelineView';
+const authService = new AuthService('https://example.com/someurl');
+async () => console.log('here');
+authService.getNewToken().then(() => {
+    console.log('here');
+});
+const dataService = new DataService('someurl', authService);
 
 const sharedState = new SharedState();
 const root = document.getElementsByTagName('body')[0];
@@ -32,7 +41,7 @@ const timelineControl = new TimelineControl(
     timelineOptions
 );
 const dataControl = new DataControl(dataView, sharedState);
-const contextMenuControl = new ContextMenuControl(mainView, sharedState);
+const contextMenuControl = new ContextMenuControl(mainView, sharedState, dataService);
 
 const mainControl = new MainControl(
     mainView,

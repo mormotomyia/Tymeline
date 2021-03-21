@@ -13,12 +13,14 @@ import {
     DataModifyDialog,
     DialogComponent,
 } from '../custom-components/DialogComponents';
+import { IDataService } from '../services/DataService';
 import { ContextMenuView } from '../view/miscView/ContextMenuView';
 import { IContextMenuControl, ISharedState, MainControl } from './MainControl';
 
 export interface IContextMenuView extends IObservable, IObserver {
     visible: boolean;
     rootElement: HTMLElement;
+    dataService: IDataService;
     setMenu(
         viewOptions: Map<
             string,
@@ -38,11 +40,21 @@ export class ContextMenuControl implements IContextMenuControl {
         string,
         { kind: typeof CustomButtonBase; dialog: typeof DialogComponent }
     >;
+    dataService: IDataService;
 
-    constructor(rootElement: HTMLElement, sharedState: ISharedState) {
+    constructor(
+        rootElement: HTMLElement,
+        sharedState: ISharedState,
+        dataService: IDataService
+    ) {
         this.sharedState = sharedState;
         // this needs to be an interface
-        this.contextMenuView = new ContextMenuView(rootElement, this.sharedState);
+        this.dataService = dataService;
+        this.contextMenuView = new ContextMenuView(
+            rootElement,
+            this.sharedState,
+            this.dataService
+        );
 
         this.viewOptions = new Map();
         this.viewOptions.set('info', { kind: CustomButton, dialog: DataInfoDialog });

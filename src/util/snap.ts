@@ -51,7 +51,7 @@ export function snap(date: dayjs.Dayjs, scale: string, step: number) {
                 break;
             default:
                 
-                clone =clone.hour(Math.round(clone.hour() / 12) * 12))
+                clone =clone.hour(Math.round(clone.hour() / 12) * 12));
                 break;
         }
         clone =clone.minute(0);
