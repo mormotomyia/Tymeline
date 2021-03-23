@@ -36,6 +36,16 @@ export class MormoDataView extends HTMLElement implements IDataView {
     }
 
     emit(keyword: string, data: any) {
+        switch (keyword) {
+            case 'panitem':
+                // this.rows.forEach((item) => {
+                //     if (item(data.target)) console.log(item);
+                // });
+                // console.log(<DataViewItem>data.target);
+                // this.buildLayers(<DataViewItem>data.target);
+                // this.renderLayers();
+                break;
+        }
         this.publish(keyword, data);
     }
 
@@ -82,15 +92,23 @@ export class MormoDataView extends HTMLElement implements IDataView {
         end: dayjs.Dayjs
     ) {
         const heightlevels = 45;
-
-        // console.trace('rendering data');
         this.domItems.clear();
 
-        this.rows = [[]];
+        // this.rows = [[]];
         elements.forEach((element) => {
             const reusedComponent = this.reuseDomComponent(element, selected, start, end);
             this.buildLayers(reusedComponent);
         });
+        this.renderLayers();
+
+        this.domItems.redundantLegendMajor.forEach((element: DataViewItem) => {
+            element.unsubscribeAll();
+            element.parentNode?.removeChild(element);
+        });
+        this.domItems.redundantLegendMajor = [];
+    }
+
+    private renderLayers() {
         this.rows.forEach((row: Array<DataViewItem>, index) => {
             // console.log(index);
             row.forEach((element) => {
@@ -99,19 +117,6 @@ export class MormoDataView extends HTMLElement implements IDataView {
                 element.style.top = `${index * 40 + 5}px`;
             });
         });
-
-        // console.log(this.rows);
-
-        // this.domItems.legendMajor.forEach((element: DataViewItem) => {
-        //     console.log(elements.find((item) => item.id === element.id));
-
-        // });
-
-        this.domItems.redundantLegendMajor.forEach((element: DataViewItem) => {
-            element.unsubscribeAll();
-            element.parentNode?.removeChild(element);
-        });
-        this.domItems.redundantLegendMajor = [];
     }
 
     private reuseDomComponent(
