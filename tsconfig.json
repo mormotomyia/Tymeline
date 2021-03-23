@@ -3,7 +3,7 @@
     /* Basic Options */
       "target": "es2017",
     "module": "es2015",
-    "lib": ["es2017", "dom", "dom.iterable"],             /* Specify library files to be included in the compilation. */
+    "lib": ["es2017", "dom", "dom.iterable","ES2019"],             /* Specify library files to be included in the compilation. */
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

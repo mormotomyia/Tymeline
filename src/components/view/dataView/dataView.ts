@@ -16,7 +16,7 @@ import { DataViewItem } from './dataViewItem';
     useShadow: false,
 })
 export class MormoDataView extends HTMLElement implements IDataView {
-    rows: Array<Array<DataViewItem>> = [[]];
+    rows: Array<Set<DataViewItem>> = [];
     domItems: DomItems;
     styleFunc?: () => void;
     subscribers: Array<IObserver> = [];
@@ -42,8 +42,9 @@ export class MormoDataView extends HTMLElement implements IDataView {
                 //     if (item(data.target)) console.log(item);
                 // });
                 // console.log(<DataViewItem>data.target);
-                // this.buildLayers(<DataViewItem>data.target);
-                // this.renderLayers();
+                this.buildLayers(<DataViewItem>data.target);
+                this.renderLayers();
+
                 break;
         }
         this.publish(keyword, data);
@@ -64,22 +65,58 @@ export class MormoDataView extends HTMLElement implements IDataView {
         });
     }
 
+    private removeFromAllOtherRows(
+        reusedComponent: DataViewItem,
+        row: Set<DataViewItem>
+    ) {
+        console.log(reusedComponent.id);
+        this.rows
+            .filter((item) => item !== row)
+            .forEach((item) => item.delete(reusedComponent));
+    }
+
     private buildLayers(reusedComponent: DataViewItem) {
-        const res = this.rows.some((row: Array<DataViewItem>) => {
+        // const existing = new Set();
+        // Array.from(this.rows).forEach((row) =>
+        //     row.forEach((item) => {
+        //         if (existing.has(item)) {
+        //         } else {
+        //             existing.add(item);
+        //         }
+        //     })
+        // );
+        const res = this.rows.some((row: Set<DataViewItem>) => {
             if (
-                row.every((value: DataViewItem) => {
+                Array.from(row).every((value: DataViewItem) => {
                     return value.notOverlap(reusedComponent);
                 })
             ) {
-                row.push(reusedComponent);
+                row.add(reusedComponent);
+                this.removeFromAllOtherRows(reusedComponent, row);
+                // remove this item from all other rows!
+
                 return true;
             } else {
                 return false;
             }
         });
 
+        // console.log(this.rows);
+        // const existing = new Set();
+        // Array.from(this.rows).forEach((row) =>
+        //     row.forEach((item) => {
+        //         if (existing.has(item)) {
+        //             row.delete(item);
+        //         } else {
+        //             existing.add(item);
+        //         }
+        //     })
+        // );
+
+        // console.log(existing);
+
         if (!res) {
-            this.rows.push([]);
+            this.rows.push(new Set());
             this.buildLayers(reusedComponent);
             // console.log(reusedComponent.id);
         }
@@ -91,6 +128,7 @@ export class MormoDataView extends HTMLElement implements IDataView {
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ) {
+        console.log('render');
         const heightlevels = 45;
         this.domItems.clear();
 
@@ -109,7 +147,7 @@ export class MormoDataView extends HTMLElement implements IDataView {
     }
 
     private renderLayers() {
-        this.rows.forEach((row: Array<DataViewItem>, index) => {
+        this.rows.forEach((row: Set<DataViewItem>, index) => {
             // console.log(index);
             row.forEach((element) => {
                 // console.log(element);
