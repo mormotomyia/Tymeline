@@ -11,7 +11,7 @@ import { DataService } from './components/services/DataService';
 import { MormoDataView } from './components/view/dataView/dataView';
 import { MainView } from './components/view/mainView';
 import { TimelineView } from './components/view/timeline/TimelineView';
-const authService = new AuthService('https://example.com/someurl');
+const authService = new AuthService('http://localhost:5000');
 async () => console.log('here');
 authService.getNewToken().then(() => {
     console.log('here');
@@ -22,7 +22,11 @@ const sharedState = new SharedState();
 const root = document.getElementsByTagName('body')[0];
 const options = {
     size: { width: 1400, height: 400 },
-    colorschema: { text: 'black', background: 'lightblue', borders: 'red' },
+    colorschema: {
+        text: 'black',
+        background: 'rgba(243, 221, 205, 0.7)',
+        borders: 'red',
+    },
 };
 
 const timelineOptions = {
@@ -58,7 +62,7 @@ bg.setTable([
         id: 1,
         length: 3600 * 48,
         content: { text: 'OHH YES' },
-        start: dayjs().subtract(5, 'day'),
+        start: dayjs().subtract(5, 'day').unix(),
         canChangeLength: true,
         canMove: false,
     },
@@ -66,7 +70,7 @@ bg.setTable([
         id: 2,
         length: 543 * 3600,
         content: { text: '2' },
-        start: dayjs().subtract(2, 'day'),
+        start: dayjs().subtract(2, 'day').unix(),
         canChangeLength: false,
         canMove: true,
     },
@@ -74,7 +78,7 @@ bg.setTable([
         id: 3,
         length: 334 * 3600,
         content: { text: '3' },
-        start: dayjs().subtract(47, 'hour'),
+        start: dayjs().subtract(47, 'hour').unix(),
         canChangeLength: false,
         canMove: false,
     },
@@ -82,7 +86,7 @@ bg.setTable([
         id: 4,
         length: 243 * 3600,
         content: { text: '4' },
-        start: dayjs().subtract(123, 'hour'),
+        start: dayjs().subtract(123, 'hour').unix(),
         canChangeLength: true,
         canMove: true,
     },
@@ -90,7 +94,7 @@ bg.setTable([
         id: 5,
         length: 234 * 3600,
         content: { text: '5' },
-        start: dayjs().subtract(52, 'hour'),
+        start: dayjs().subtract(52, 'hour').unix(),
         canChangeLength: true,
         canMove: false,
     },
@@ -98,11 +102,13 @@ bg.setTable([
         id: 6,
         length: 26 * 3600,
         content: { text: '6' },
-        start: dayjs().subtract(54, 'hour'),
+        start: dayjs().subtract(54, 'hour').unix(),
         canChangeLength: true,
         canMove: true,
     },
 ]);
+
+// fetch('localhost:5000');
 
 // const log = document.createElement('p');
 // const input = document.createElement('input');

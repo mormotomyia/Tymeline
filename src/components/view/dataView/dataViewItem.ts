@@ -25,7 +25,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
     selected = false;
     pristine = true;
 
-    private subscribers: Array<IObserver> = [];
+    subscribers: Array<IObserver> = [];
 
     constructor() {
         super();

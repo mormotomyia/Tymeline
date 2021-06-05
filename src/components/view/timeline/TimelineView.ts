@@ -63,9 +63,9 @@ export class TimelineView extends HTMLElement implements ITimelineView {
             '-webkit-fill-available'; /* Mozilla-based browsers will ignore this. */
         this.style.width = 'fill-available';
         this.style.width = '1400px';
-        this.style.border = 'solid';
-        this.style.borderWidth = 'thin';
-        this.style.borderTopWidth = 'thick';
+        this.style.borderTopStyle = 'solid';
+        // this.style.borderWidth = 'thin';
+        this.style.borderTopWidth = '4px';
         this.style.overflow = 'hidden';
 
         this.domItems = new DomItems();

@@ -27,7 +27,7 @@ export class TableData implements ITableData {
         canChangeLength: boolean
     ): TableData {
         if (typeof start === 'number') {
-            start = dayjs(start);
+            start = dayjs(start * 1000);
         } else if (typeof start === 'string') {
             start = dayjs(start);
         }

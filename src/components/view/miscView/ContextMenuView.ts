@@ -15,7 +15,8 @@ import {
     DialogComponent,
     DialogComponentContainer,
 } from '../../custom-components/DialogComponents';
-import { IDataService } from '../../services/DataService';
+import { DataService } from '../../services/DataService';
+import { IDataService } from '../../services/serviceSpec/DataServiceSpec';
 
 @CustomNoTemplateHTMLElement({
     selector: 'contextmenu-view',

@@ -66,6 +66,9 @@ export class ContextMenuControl implements IContextMenuControl {
     }
     public setContextMenu(event: MouseEvent) {
         this.targetItem = <HTMLElement>event.target;
+        console.warn('here!');
+        console.log(event.pageX);
+        console.log(event);
         this.contextMenuView.render(event.pageX - 5, event.pageY - 5);
     }
 

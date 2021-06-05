@@ -52,6 +52,9 @@ export class MainView extends HTMLElement implements IMainView {
         this.style.display = 'block';
 
         if (tableOptions) {
+            this.style.position = 'relative';
+            // this.style.marginLeft = '50px';
+            // this.style.marginTop = '50px';
             this.style.width = `${tableOptions.size.width}px`;
             this.style.height = `${tableOptions.size.height}px`;
 

@@ -71,54 +71,29 @@ export class MormoDataView extends HTMLElement implements IDataView {
     ) {
         console.log(reusedComponent.id);
         this.rows
-            .filter((item) => item !== row)
+            // .filter((item) => item !== row)
             .forEach((item) => item.delete(reusedComponent));
+        console.log(this.rows);
     }
 
     private buildLayers(reusedComponent: DataViewItem) {
-        // const existing = new Set();
-        // Array.from(this.rows).forEach((row) =>
-        //     row.forEach((item) => {
-        //         if (existing.has(item)) {
-        //         } else {
-        //             existing.add(item);
-        //         }
-        //     })
-        // );
         const res = this.rows.some((row: Set<DataViewItem>) => {
             if (
                 Array.from(row).every((value: DataViewItem) => {
                     return value.notOverlap(reusedComponent);
                 })
             ) {
-                row.add(reusedComponent);
                 this.removeFromAllOtherRows(reusedComponent, row);
-                // remove this item from all other rows!
-
+                row.add(reusedComponent);
                 return true;
             } else {
                 return false;
             }
         });
 
-        // console.log(this.rows);
-        // const existing = new Set();
-        // Array.from(this.rows).forEach((row) =>
-        //     row.forEach((item) => {
-        //         if (existing.has(item)) {
-        //             row.delete(item);
-        //         } else {
-        //             existing.add(item);
-        //         }
-        //     })
-        // );
-
-        // console.log(existing);
-
         if (!res) {
             this.rows.push(new Set());
             this.buildLayers(reusedComponent);
-            // console.log(reusedComponent.id);
         }
     }
 
@@ -132,7 +107,6 @@ export class MormoDataView extends HTMLElement implements IDataView {
         const heightlevels = 45;
         this.domItems.clear();
 
-        // this.rows = [[]];
         elements.forEach((element) => {
             const reusedComponent = this.reuseDomComponent(element, selected, start, end);
             this.buildLayers(reusedComponent);
@@ -148,10 +122,8 @@ export class MormoDataView extends HTMLElement implements IDataView {
 
     private renderLayers() {
         this.rows.forEach((row: Set<DataViewItem>, index) => {
-            // console.log(index);
             row.forEach((element) => {
-                // console.log(element);
-                // console.log(index);
+                // console.log(element.id);
                 element.style.top = `${index * 40 + 5}px`;
             });
         });
