@@ -7,6 +7,7 @@ import { IObserver } from '../../../observer/Observer';
 import { IDraggedItem } from '../../control/DataControl';
 import { CustomButton } from '../../custom-components/customButton';
 import { DomItems } from '../../model/DomItems';
+import { Layer } from '../../model/Layer';
 import { TableData } from '../../model/TableData';
 import { IDataView } from '../../model/ViewPresenter/IDataView';
 import { DataViewItem } from './dataViewItem';
@@ -16,7 +17,7 @@ import { DataViewItem } from './dataViewItem';
     useShadow: false,
 })
 export class MormoDataView extends HTMLElement implements IDataView {
-    rows: Array<Set<DataViewItem>> = [];
+    rows: Array<Layer> = [];
     domItems: DomItems;
     styleFunc?: () => void;
     subscribers: Array<IObserver> = [];
@@ -38,11 +39,7 @@ export class MormoDataView extends HTMLElement implements IDataView {
     emit(keyword: string, data: any) {
         switch (keyword) {
             case 'panitem':
-                // this.rows.forEach((item) => {
-                //     if (item(data.target)) console.log(item);
-                // });
-                // console.log(<DataViewItem>data.target);
-                this.buildLayers(<DataViewItem>data.target);
+                this.insertIntoLayer(<DataViewItem>data.target, this.rows);
                 this.renderLayers();
 
                 break;
@@ -65,36 +62,35 @@ export class MormoDataView extends HTMLElement implements IDataView {
         });
     }
 
-    private removeFromAllOtherRows(
-        reusedComponent: DataViewItem,
-        row: Set<DataViewItem>
-    ) {
-        console.log(reusedComponent.id);
-        this.rows
-            // .filter((item) => item !== row)
-            .forEach((item) => item.delete(reusedComponent));
-        console.log(this.rows);
-    }
-
-    private buildLayers(reusedComponent: DataViewItem) {
-        const res = this.rows.some((row: Set<DataViewItem>) => {
-            if (
-                Array.from(row).every((value: DataViewItem) => {
-                    return value.notOverlap(reusedComponent);
-                })
-            ) {
-                this.removeFromAllOtherRows(reusedComponent, row);
-                row.add(reusedComponent);
-                return true;
-            } else {
+    private insertIntoLayer(element: DataViewItem, layers: Array<Layer>) {
+        const couldNotInsert = layers.every((layer) => {
+            if (layer.canInsert(element)) {
+                layer.insert(element);
                 return false;
             }
+            return true;
         });
 
-        if (!res) {
-            this.rows.push(new Set());
-            this.buildLayers(reusedComponent);
+        if (couldNotInsert) {
+            const layer = new Layer();
+            layer.insert(element);
+            layers.push(layer);
         }
+    }
+
+    private buildLayers(items: DataViewItem[]) {
+        items
+            .sort((a, b) => {
+                return a.getBoundingClientRect().right - b.getBoundingClientRect().right;
+            })
+            .reverse();
+        items.sort((a, b) => {
+            return a.getBoundingClientRect().left - b.getBoundingClientRect().left;
+        });
+
+        this.rows = [];
+
+        items.forEach((item) => this.insertIntoLayer(item, this.rows));
     }
 
     render(
@@ -107,10 +103,10 @@ export class MormoDataView extends HTMLElement implements IDataView {
         const heightlevels = 45;
         this.domItems.clear();
 
-        elements.forEach((element) => {
-            const reusedComponent = this.reuseDomComponent(element, selected, start, end);
-            this.buildLayers(reusedComponent);
+        const reusedComponents = elements.map((element) => {
+            return this.reuseDomComponent(element, selected, start, end);
         });
+        this.buildLayers(reusedComponents);
         this.renderLayers();
 
         this.domItems.redundantLegendMajor.forEach((element: DataViewItem) => {
@@ -121,8 +117,8 @@ export class MormoDataView extends HTMLElement implements IDataView {
     }
 
     private renderLayers() {
-        this.rows.forEach((row: Set<DataViewItem>, index) => {
-            row.forEach((element) => {
+        this.rows.forEach((row: Layer, index) => {
+            row.elements.forEach((element) => {
                 // console.log(element.id);
                 element.style.top = `${index * 40 + 5}px`;
             });
