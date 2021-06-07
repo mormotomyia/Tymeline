@@ -9,8 +9,8 @@ import { IMainControl } from '../mormoTable';
 import { IDataService } from '../services/DataService';
 import { MormoDataView } from '../view/dataView/dataView';
 import { MainView } from '../view/mainView';
-import { TimelineView } from '../view/timeline/TimelineView';
-import { TimeStep } from '../view/timeline/TimeStep';
+import { TimelineView } from '../view/timelineView/TimelineView';
+import { TimeStep } from '../view/timelineView/TimeStep';
 import { ContextMenuControl, IContextMenuView } from './ContextMenuControl';
 import { DataControl } from './DataControl';
 import { TimelineControl } from './TimelineControl';
@@ -72,7 +72,6 @@ export class MainControl implements IMainControl {
     deltaX = 0;
     draggable = true;
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
     constructor(
         mainView: IMainView,
         contextMenuControl: IContextMenuControl,
@@ -91,21 +90,27 @@ export class MainControl implements IMainControl {
 
         this.dataControl.subscribe(this);
         // this.timelineControl
+        this.render();
     }
 
-    emit(keyword: string, event: HammerInput | Event): void {
+    public setTable(argument: Array<ITableData>) {
+        this.dataControl.setTable(argument);
+        this.render();
+    }
+
+    public updateTable(argument: Array<ITableData>) {
+        this.dataControl.updateTable(argument);
+        this.render();
+    }
+
+    public emit(keyword: string, event: HammerInput | Event): void {
         switch (keyword) {
             case 'tap':
-                if (event.target != null) {
-                    const target = <HTMLElement>event.target;
-
-                    if (target.tagName == 'DATA-VIEW') {
-                        if (this.contextMenuControl.visible) {
-                            this.contextMenuControl.hide();
-                        }
-                        this.dataControl.emit('removeSelection', null);
-                    }
-                }
+                this.hideContextMenuOnClick(event);
+                break;
+            case 'contextMenu':
+                event.preventDefault();
+                this.contextMenuControl.setContextMenu(<MouseEvent>event);
                 break;
             case 'panstartitem':
                 this.draggable = false;
@@ -127,22 +132,29 @@ export class MainControl implements IMainControl {
             case 'onwheel':
                 this.changeZoom(<WheelEvent>event);
                 break;
-            case 'contextMenu':
-                event.preventDefault();
-                // console.log('open Contextmenu');
-                this.contextMenuControl.setContextMenu(<MouseEvent>event);
-                break;
             default:
                 break;
         }
     }
 
-    dragStart(event: HammerInput) {
-        console.log(event.isFirst);
+    private hideContextMenuOnClick(event: HammerInput | Event) {
+        if (event.target != null) {
+            const target = <HTMLElement>event.target;
+
+            if (target.tagName == 'DATA-VIEW') {
+                if (this.contextMenuControl.visible) {
+                    this.contextMenuControl.hide();
+                }
+                this.dataControl.emit('removeSelection', null);
+            }
+        }
+    }
+
+    private dragStart(event: HammerInput) {
         this.deltaX = 0;
     }
 
-    dragEnd(_: any) {}
+    private dragEnd(_: any) {}
 
     private drag(event: HammerInput) {
         const target = <HTMLElement>event.srcEvent.target;
@@ -160,23 +172,13 @@ export class MainControl implements IMainControl {
 
     private changeZoom(event: WheelEvent) {
         event.preventDefault();
-        // console.log(event.offsetX);
-        // console.log(event.deltaY);
         this.timelineControl.updateScale('zoom', event.deltaY, event.offsetX);
         this.render();
     }
 
-    render() {
+    private render() {
         this.mainView.render();
         this.timelineControl.render();
         this.dataControl.render(this.timelineControl.start, this.timelineControl.end);
-    }
-
-    setTable(argument: Array<ITableData>) {
-        this.dataControl.setTable(argument);
-    }
-
-    updateTable(argument: Array<ITableData>) {
-        this.dataControl.updateTable(argument);
     }
 }

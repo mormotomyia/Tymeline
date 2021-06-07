@@ -32,7 +32,6 @@ export class MormoDataView extends HTMLElement implements IDataView {
         this.className = 'mormo-items';
         this.styleFunc = styleFunc;
         rootElement.prepend(this);
-        // this.rootElement = rootElement
         if (this.styleFunc) this.styleFunc();
     }
 
@@ -44,6 +43,8 @@ export class MormoDataView extends HTMLElement implements IDataView {
 
                 break;
         }
+        // console.log(keyword);
+        // console.log(data);
         this.publish(keyword, data);
     }
 
@@ -100,7 +101,7 @@ export class MormoDataView extends HTMLElement implements IDataView {
         end: dayjs.Dayjs
     ) {
         console.log('render');
-        const heightlevels = 45;
+
         this.domItems.clear();
 
         const reusedComponents = elements.map((element) => {
@@ -131,22 +132,21 @@ export class MormoDataView extends HTMLElement implements IDataView {
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ) {
-        let reusedComponent: DataViewItem;
-        reusedComponent = <DataViewItem>this.domItems.redundantLegendMajor.shift();
-        if (!reusedComponent) {
-            reusedComponent = new DataViewItem();
-            this.appendChild(reusedComponent);
-            reusedComponent.subscribe(this);
-            // setDefaultStyle(reusedComponent);
+        let dataComponent: DataViewItem;
+        dataComponent = <DataViewItem>this.domItems.redundantLegendMajor.shift();
+        if (!dataComponent) {
+            dataComponent = new DataViewItem();
+            this.appendChild(dataComponent);
+            dataComponent.subscribe(this);
         } else {
-            reusedComponent.unselect();
+            dataComponent.unselect();
         }
 
-        reusedComponent.update(element, start, end);
+        dataComponent.update(element, start, end);
         if (selected.has(element.id)) {
-            reusedComponent.select();
+            dataComponent.select();
         }
-        this.domItems.legendMajor.push(reusedComponent);
-        return reusedComponent;
+        this.domItems.legendMajor.push(dataComponent);
+        return dataComponent;
     }
 }

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { ITimelineView } from '../model/ViewPresenter/ITimelineView';
-import { TimelineView } from '../view/timeline/TimelineView';
-import TimeStep from '../view/timeline/TimeStep';
+import { TimelineView } from '../view/timelineView/TimelineView';
+import TimeStep from '../view/timelineView/TimeStep';
 import { ISharedState, ITimelineControl } from './MainControl';
 
 export class TimelineControl implements ITimelineControl {

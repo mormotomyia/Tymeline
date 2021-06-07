@@ -13,7 +13,21 @@ export class DataService implements IDataService {
     }
 
     async getTableEntry(): Promise<Array<ITableDataEntry>> {
-        const response = await fetch(this.url + '/tableentry/get/all', {
+        const response = await fetch(this.url + '/tymeline/get', {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `${this.auth.token}`,
+            },
+        });
+        return response.json();
+    }
+
+    async getTableEntryById(id: string): Promise<ITableDataEntry> {
+        const response = await fetch(this.url + `/tymeline/get/${id}`, {
             method: 'GET',
             mode: 'cors',
             cache: 'no-cache',
@@ -30,7 +44,11 @@ export class DataService implements IDataService {
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ): Promise<Array<ITableDataEntry>> {
-        const response = await fetch(this.url + '/tableentry/get/partial', {
+        let url = this.url + '/tymeline/partial';
+        const query = { start: start.unix(), end: end.unix() };
+        url += '?' + this.objectToQueryString(query);
+
+        const response = await fetch(url, {
             method: 'GET',
             mode: 'cors',
             cache: 'no-cache',
@@ -39,13 +57,12 @@ export class DataService implements IDataService {
                 'Content-Type': 'application/json',
                 Authorization: `${this.auth.token}`,
             },
-            body: JSON.stringify({ start: start.unix(), end: end.unix() }),
         });
         return response.json();
     }
 
     async sendTableEntry(data: Array<ITableDataEntry>): Promise<boolean> {
-        const response = await fetch(this.url + '/tableentry/post/all', {
+        const response = await fetch(this.url + '/tymeline/create/multiple', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
@@ -59,12 +76,8 @@ export class DataService implements IDataService {
         return response.json();
     }
 
-    async sendPartialTableEntry(
-        data: Array<ITableDataEntry>,
-        start: dayjs.Dayjs,
-        end: dayjs.Dayjs
-    ): Promise<boolean> {
-        const response = await fetch(this.url + '/tableentry/post/partial', {
+    async updateSingleTableEntry(data: ITableDataEntry): Promise<boolean> {
+        const response = await fetch(this.url + 'tableentry/update', {
             method: 'POST',
             mode: 'cors',
             cache: 'no-cache',
@@ -73,8 +86,29 @@ export class DataService implements IDataService {
                 'Content-Type': 'application/json',
                 Authorization: `${this.auth.token}`,
             },
-            body: JSON.stringify({ data: data, start: start.unix(), end: end.unix() }),
+            body: JSON.stringify({ data: data }),
         });
         return response.json();
+    }
+
+    async createSingleTableEntry(data: ITableDataEntry): Promise<boolean> {
+        const response = await fetch(this.url + 'tableentry/create', {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `${this.auth.token}`,
+            },
+            body: JSON.stringify({ data: data }),
+        });
+        return response.json();
+    }
+
+    private objectToQueryString(obj) {
+        return Object.keys(obj)
+            .map((key) => key + '=' + obj[key])
+            .join('&');
     }
 }

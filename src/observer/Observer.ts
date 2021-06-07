@@ -3,8 +3,5 @@ export interface IObserver {
 }
 
 export class Observer implements IObserver {
-    emit(keyword: string, data: any): void {
-        // console.log(`${keyword}:`)
-        // console.log(data)
-    }
+    emit(keyword: string, data: any): void {}
 }

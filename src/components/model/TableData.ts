@@ -31,6 +31,7 @@ export class TableData implements ITableData {
         } else if (typeof start === 'string') {
             start = dayjs(start);
         }
+
         const end = start.add(length, 'second');
         return new TableData(id, content, start, end, canMove, canChangeLength);
     }
@@ -38,8 +39,8 @@ export class TableData implements ITableData {
     constructor(
         id: number | string,
         content: { text: string },
-        start: number | string | dayjs.Dayjs,
-        end: number | string | dayjs.Dayjs,
+        start: dayjs.Dayjs,
+        end: dayjs.Dayjs,
         canMove: boolean,
         canChangeLength: boolean
     ) {

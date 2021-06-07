@@ -31,13 +31,10 @@ export class DataViewItem extends HTMLElement implements IObservable {
         super();
 
         // rootElement.appendChild(this);
-        this.className = 'mormo-element';
 
         this.oncontextmenu = (event) => this.publish('contextMenu', event);
         this.hammerview = new Hammer(this);
-        this.onmousedown = (event) => this.publish('onSelect', event);
-        this.onmouseup = (event) => this.publish('onUnselect', event);
-        // this.hammerview.on('tap', this.onSelect.bind(this));
+        this.onmouseup = (event) => this.mouseDownEvent(<DataViewItem>event.target);
         this.hammerview.on('panstart', (event) => this.publish('panstartitem', event));
         this.hammerview.on('pan', (event) => this.publish('panitem', event));
         this.hammerview.on('panend', (event) => this.publish('panenditem', event));
@@ -50,43 +47,29 @@ export class DataViewItem extends HTMLElement implements IObservable {
         // set the appropriate events in here.
         // where do I even fire them to?!
         // this does need some more thought! (as of right now this is just a builder class which is reusable but also not well defined)
-
+        this.className = 'mormo-element';
         this.content = document.createElement('div');
-        this.appendChild(this.content);
-
         this.content.style.userSelect = 'none';
         this.content.style.pointerEvents = 'none';
+
         this.onmousemove = this.changeMouseOnEdgeLeftRight;
+        this.appendChild(this.content);
     }
 
-    public overlap(other: DataViewItem): boolean {
-        // assert other right before our left
-        if (this === other) {
-            return false;
-        }
-        if (
-            this.getBoundingClientRect().left > other.getBoundingClientRect().right ||
-            this.getBoundingClientRect().right < other.getBoundingClientRect().left
-        ) {
-            return false;
+    private mouseDownEvent(element: DataViewItem) {
+        if (element.classList.contains('selected')) {
+            this.publish('onUnselect', element);
         } else {
-            return true;
+            this.publish('onSelect', element);
         }
-    }
-
-    notOverlap(other: DataViewItem) {
-        return !this.overlap(other);
     }
 
     public update(element: ITableData, start: dayjs.Dayjs, end: dayjs.Dayjs) {
-        // console.log('update')
         this.canMove = element.canMove;
         this.canChangeLength = element.canChangeLength;
-
         this.id = `${element.id}`;
-
-        // this.onclick = (ev: MouseEvent) => console.log(`${ev} clicked`);
         this.content.innerHTML = element.content.text;
+
         this.updateTime(element.start, element.end, start, end);
     }
 
@@ -103,9 +86,7 @@ export class DataViewItem extends HTMLElement implements IObservable {
     }
 
     public subscribe(observer: IObserver) {
-        //we could check to see if it is already subscribed
         this.subscribers.push(observer);
-        // console.log(`${observer} has been subscribed`);
     }
     public unsubscribe(observer: IObserver) {
         this.subscribers = this.subscribers.filter((el) => {
@@ -130,17 +111,15 @@ export class DataViewItem extends HTMLElement implements IObservable {
     select() {
         this.selected = true;
         this.style.borderStyle = 'solid';
-        this.publish('select', null);
+        this.classList.add('selected');
+        // this.publish('select', this.id);
     }
 
     unselect() {
         this.selected = false;
         this.style.borderStyle = 'hidden';
-        this.publish('unselect', null);
-    }
-
-    private onSelect(event: MouseEvent) {
-        this.publish('onSelect', event);
+        this.classList.remove('selected');
+        // this.publish('unselect', this.id);
     }
 
     private changeMouseOnEdgeLeftRight(event: MouseEvent) {
@@ -169,7 +148,6 @@ export class DataViewItem extends HTMLElement implements IObservable {
     }
 
     private changeStart(event: MouseEvent) {
-        // this.style.transform = "translate(25px)"
         console.log(event);
     }
 

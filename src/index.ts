@@ -10,12 +10,17 @@ import { AuthService } from './components/services/AuthService';
 import { DataService } from './components/services/DataService';
 import { MormoDataView } from './components/view/dataView/dataView';
 import { MainView } from './components/view/mainView';
-import { TimelineView } from './components/view/timeline/TimelineView';
+import { TimelineView } from './components/view/timelineView/TimelineView';
 const authService = new AuthService('http://localhost:5000');
 async () => console.log('here');
-authService.getNewToken().then(() => {
-    console.log('here');
-});
+
+authService
+    .getNewToken()
+    .then(() => {
+        console.log('here');
+    })
+    .catch((reason) => console.warn(reason));
+
 const dataService = new DataService('someurl', authService);
 
 const sharedState = new SharedState();
@@ -107,20 +112,3 @@ bg.setTable([
         canMove: true,
     },
 ]);
-
-// fetch('localhost:5000');
-
-// const log = document.createElement('p');
-// const input = document.createElement('input');
-// rootElement.appendChild(log);
-// rootElement.appendChild(input);
-
-// // const log = document.getElementById('values');
-// input.oninput = (event) => updateValue(event);
-// // input.addEventListener('input', updateValue);
-
-// function updateValue(e) {
-//     log.textContent = e.target.value;
-// }
-
-// bg.updateTable({1:{length:3600*48,content:{text:'asdff'},start:0},2:{length:500*3600,content:{text:'asdf'},start:5}})

@@ -7,7 +7,7 @@ import { IObserver } from '../../observer/Observer';
 import { DataViewItem } from '../view/dataView/dataViewItem';
 import { snap } from '../../util/snap';
 import { IDataControl, ISharedState } from './MainControl';
-import TimeStep from '../view/timeline/TimeStep';
+import TimeStep from '../view/timelineView/TimeStep';
 import { IDataView } from '../model/ViewPresenter/IDataView';
 
 export interface IDraggedItem {
@@ -81,30 +81,32 @@ export class DataControl implements IDataControl {
         this.subscribers.push(observer);
         console.log(`${observer} "has been subscribed`);
     }
+
     public unsubscribe(observer: IObserver) {
         this.subscribers = this.subscribers.filter((el) => {
             return el !== observer;
         });
     }
+
     public publish(keyword: string, data: any) {
         this.subscribers.forEach((subscriber) => {
             subscriber.emit(keyword, data);
         });
     }
 
-    public emit(keyword: string, data: HammerInput | Event) {
-        this.publish(keyword, data);
+    public emit(keyword: string, data: HammerInput | Event | DataViewItem) {
         switch (keyword) {
             case 'removeSelection':
                 this.removeSelection();
                 break;
             case 'onSelect':
+                console.log('asd');
                 console.log(data);
-                this.onSelect(<MouseEvent>data);
+                this.onSelect(<DataViewItem>data);
                 break;
             case 'onUnselect':
                 console.log(data);
-                this.onUnselect(<MouseEvent>data);
+                this.onUnselect(<DataViewItem>data);
                 break;
             case 'panstartitem':
                 this.dragItemStart(<HammerInput>data);
@@ -116,6 +118,34 @@ export class DataControl implements IDataControl {
                 this.dragItemEnd(<HammerInput>data);
                 break;
         }
+        this.publish(keyword, data);
+    }
+
+    setTable(objects: Array<ITableData>) {
+        this.tableData.clear();
+
+        this.updateTable(objects);
+    }
+
+    render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
+        this.sharedState.visibleElements = this.getVisibleElements(start, end);
+        this.dataView.render(this.sharedState.visibleElements, this.selected, start, end);
+    }
+
+    private getVisibleElements(start: dayjs.Dayjs, end: dayjs.Dayjs): Array<ITableData> {
+        this.start = start;
+        this.end = end;
+
+        const visibleData: Array<ITableData> = [];
+        this.tableData.forEach((value) => {
+            // eslint-disable-next-line no-empty
+            if (value.end < start || value.start > end) {
+            } else {
+                visibleData.push(value);
+            }
+        });
+
+        return visibleData;
     }
 
     get timeframe() {
@@ -125,30 +155,27 @@ export class DataControl implements IDataControl {
         return 0;
     }
 
-    private onUnselect(event: MouseEvent) {
+    private onUnselect(dataViewItem: DataViewItem) {
         // this is really a bad way of doing it!
-        const dataViewItem = <DataViewItem>event.target;
-        console.log(dataViewItem.pristine);
-        if (!dataViewItem.pristine) {
-            dataViewItem.unselect();
-            this.selected.delete(dataViewItem.id);
-            dataViewItem.pristine = true;
-        } else {
-            dataViewItem.pristine = false;
-        }
-        console.log(dataViewItem.pristine);
+
+        // console.log(dataViewItem.pristine);
+        console.log('UNSELECT');
+        dataViewItem.unselect();
+        this.selected.delete(dataViewItem.id);
+        // if (!dataViewItem.pristine) {
+        //     dataViewItem.unselect();
+        //     this.selected.delete(dataViewItem.id);
+        //     dataViewItem.pristine = true;
+        // } else {
+        //     dataViewItem.pristine = false;
+        // }
+        // console.log(dataViewItem.pristine);
     }
 
-    private onSelect(event: MouseEvent) {
-        const dataViewItem = <DataViewItem>event.target;
+    private onSelect(dataViewItem: DataViewItem) {
         const data = <ITableData>this.tableData.get(dataViewItem.id);
-
-        // const target = <DataViewItem>event.srcEvent.target;
-        if (this.selected.has(dataViewItem.id)) {
-            //pass
-            // dataViewItem.unselect();
-            // this.selected.delete(dataViewItem.id);
-        } else {
+        console.log('SELECT');
+        if (!this.selected.has(dataViewItem.id)) {
             this.selected.set(
                 dataViewItem.id,
                 new DraggedItem(
@@ -161,9 +188,13 @@ export class DataControl implements IDataControl {
                 )
             );
             dataViewItem.select();
+            console.log(this.selected);
+            console.log(this.selected.keys().next());
+            console.log(this.selected.values().next());
         }
     }
-    public removeSelection() {
+    private removeSelection() {
+        console.log('UNSELECT');
         this.selected.forEach((value) => value.dom.unselect());
         this.selected.clear();
     }
@@ -202,12 +233,11 @@ export class DataControl implements IDataControl {
     }
 
     private move(delta: number) {
-        // console.log(this.selected);
-
-        const arr = Array.from(this.selected.values()).filter(
+        const movableItems = Array.from(this.selected.values()).filter(
             (draggedItem) => draggedItem.canMove === true
         );
-        arr.forEach((draggedItem) => this.moveItem(draggedItem, delta));
+        console.log(movableItems);
+        movableItems.forEach((draggedItem) => this.moveItem(draggedItem, delta));
     }
 
     private resizeLeft(delta: number) {
@@ -215,6 +245,7 @@ export class DataControl implements IDataControl {
             .filter((draggedItem) => draggedItem.canChangeLength === true)
             .forEach((draggedItem) => this.resizeItemLeft(draggedItem, delta));
     }
+
     private resizeRight(delta: number) {
         Array.from(this.selected.values())
             .filter((draggedItem) => draggedItem.canChangeLength === true)
@@ -230,6 +261,7 @@ export class DataControl implements IDataControl {
         );
         value.dom.updateTime(snappedStart, value.tempEnd, this.start, this.end);
     }
+
     private resizeItemRight(value: IDraggedItem, delta: number) {
         value.tempEnd = value.tempEnd.add(delta, 'second');
         const snappedEnd = snap(value.tempEnd, this.timestep.scale, this.timestep.step);
@@ -267,6 +299,7 @@ export class DataControl implements IDataControl {
     private moveRight(event: HammerInput, draggedItem: IDraggedItem): boolean {
         return draggedItem.canChangeLength && event.target.style.cursor === 'e-resize';
     }
+
     private moveLeft(event: HammerInput, draggedItem: IDraggedItem): boolean {
         return draggedItem.canChangeLength && event.target.style.cursor === 'w-resize';
     }
@@ -308,12 +341,6 @@ export class DataControl implements IDataControl {
                 );
 
                 if (draggedItem.tempEnd.diff(snappedStart, 'second') > 0) {
-                    // draggedItem.dom.updateTime(
-                    //     snappedStart,
-                    //     draggedItem.tempEnd,
-                    //     this.start,
-                    //     this.end
-                    // );
                     this.tableData
                         .get(draggedItem.id)
                         ?.changeLength(
@@ -329,22 +356,6 @@ export class DataControl implements IDataControl {
         const sel: Array<string> = [];
         this.selected.forEach((_, key) => sel.push(key));
         this.removeSelection();
-        // console.log(sel);
-        // sel.forEach((key: string) => {
-        //     const data = <ITableData>this.tableData.get(key);
-        //     console.log('AAA');
-        //     this.selected.set(
-        //         key,
-        //         new DraggedItem(
-        //             <DataViewItem>event.target,
-        //             data.id,
-        //             data.canMove,
-        //             data.canChangeLength,
-        //             data.start,
-        //             data.end
-        //         )
-        //     );
-        // });
         this.render(this.start, this.end);
         this.selected.forEach((value: IDraggedItem) => {
             value.dom.style.cursor = 'grab';
@@ -382,32 +393,5 @@ export class DataControl implements IDataControl {
         objects.forEach((element) => {
             this.updateTableItem(element);
         });
-    }
-
-    setTable(objects: Array<ITableData>) {
-        this.tableData.clear();
-
-        this.updateTable(objects);
-    }
-
-    render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
-        this.sharedState.visibleElements = this.getVisibleElements(start, end);
-        this.dataView.render(this.sharedState.visibleElements, this.selected, start, end);
-    }
-
-    private getVisibleElements(start: dayjs.Dayjs, end: dayjs.Dayjs): Array<ITableData> {
-        this.start = start;
-        this.end = end;
-
-        const visibleData: Array<ITableData> = [];
-        this.tableData.forEach((value) => {
-            // eslint-disable-next-line no-empty
-            if (value.end < start || value.start > end) {
-            } else {
-                visibleData.push(value);
-            }
-        });
-
-        return visibleData;
     }
 }

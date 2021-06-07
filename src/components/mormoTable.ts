@@ -1,7 +1,7 @@
 import { IProps, ITableData, ITableDataEntry } from '../interfaces/IObject';
 import { ITableOptions } from '../interfaces/ITableOptions';
 
-import { TimelineView, Transform } from './view/timeline/TimelineView';
+import { TimelineView, Transform } from './view/timelineView/TimelineView';
 
 import { DomItems } from './model/DomItems';
 import { DataControl } from './control/DataControl';
@@ -10,7 +10,6 @@ import { MainControl } from './control/MainControl';
 import dayjs from 'dayjs';
 import { IObserver } from '../observer/Observer';
 export interface IMainControl extends IObserver {
-    render(): void;
     setTable(argument: Array<ITableData>): void;
     updateTable(argument: Array<ITableData>): void;
 }
@@ -39,25 +38,21 @@ export class MormoTable {
             };
         }
 
-        this.render();
+        // this.render();
     }
 
-    render() {
-        this.mainControl.render();
-    }
-
-    setTable(argument: Array<any>) {
+    public setTable(argument: Array<any>) {
         this.mainControl.setTable(argument);
-        this.render();
+        // this.render();
     }
-    updateTable(argument: Array<any>) {
+    public updateTable(argument: Array<any>) {
         this.mainControl.updateTable(argument);
-        this.render();
+        // this.render();
     }
-
-    // render(){
-    //     this.dataManager.render();
-    // }
 
     start() {}
+
+    // private render() {
+    //     this.mainControl.render();
+    // }
 }
