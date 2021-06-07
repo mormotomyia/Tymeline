@@ -11,4 +11,6 @@ export interface IDataView extends IObservable, IObserver {
         start: dayjs.Dayjs,
         end: dayjs.Dayjs
     ): void;
+
+    asHtmlElement(): HTMLElement;
 }

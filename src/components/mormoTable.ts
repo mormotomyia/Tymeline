@@ -6,10 +6,21 @@ import { TimelineView, Transform } from './view/timelineView/TimelineView';
 import { DomItems } from './model/DomItems';
 import { DataControl } from './control/DataControl';
 
-import { MainControl } from './control/MainControl';
+import {
+    IContextMenuControl,
+    IDataControl,
+    IMainView,
+    ITimelineControl,
+    MainControl,
+} from './control/MainControl';
 import dayjs from 'dayjs';
 import { IObserver } from '../observer/Observer';
 export interface IMainControl extends IObserver {
+    start(): void;
+    addMainView(mainView: IMainView): IMainControl;
+    addContextMenuControl(contextMenuControl: IContextMenuControl): IMainControl;
+    addTimelineControl(timelineControl: ITimelineControl): IMainControl;
+    addDataControl(dataControl: IDataControl): IMainControl;
     setTable(argument: Array<ITableData>): void;
     updateTable(argument: Array<ITableData>): void;
 }
@@ -22,37 +33,36 @@ export class MormoTable {
 
     mainControl: IMainControl;
 
-    constructor(
-        container: HTMLElement,
-        mainControl: IMainControl,
-        options: ITableOptions
-    ) {
-        this.root = container;
+    constructor(options: ITableOptions) {
         this.props = { domItems: new DomItems(), dom: {} };
         this.tableOptions = options;
-        this.mainControl = mainControl;
+
         if (this.tableOptions?.dates === undefined) {
             this.tableOptions.dates = {
                 start: new Date(new Date().getTime() - 7 * 24 * 3600 * 1000),
                 end: new Date(new Date().getTime() + 7 * 24 * 3600 * 1000),
             };
         }
+    }
 
-        // this.render();
+    setContainer(container: HTMLElement): MormoTable {
+        this.root = container;
+        return this;
+    }
+
+    setMainControl(mainControl: IMainControl): MormoTable {
+        this.mainControl = mainControl;
+        return this;
     }
 
     public setTable(argument: Array<any>) {
         this.mainControl.setTable(argument);
-        // this.render();
     }
     public updateTable(argument: Array<any>) {
         this.mainControl.updateTable(argument);
-        // this.render();
     }
 
-    start() {}
-
-    // private render() {
-    //     this.mainControl.render();
-    // }
+    start() {
+        this.mainControl.start();
+    }
 }

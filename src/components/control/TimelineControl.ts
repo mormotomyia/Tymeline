@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { ITimelineView } from '../model/ViewPresenter/ITimelineView';
 import { TimelineView } from '../view/timelineView/TimelineView';
 import TimeStep from '../view/timelineView/TimeStep';
-import { ISharedState, ITimelineControl } from './MainControl';
+import { ISharedState, ITimelineControl, SharedState } from './MainControl';
 
 export class TimelineControl implements ITimelineControl {
     start: dayjs.Dayjs;
@@ -12,22 +12,22 @@ export class TimelineControl implements ITimelineControl {
     timestep: TimeStep;
     sharedState: ISharedState;
 
-    constructor(
-        rootElement: HTMLElement,
-        timelineView: ITimelineView,
-        sharedState: ISharedState,
-        options: { start: dayjs.Dayjs; end: dayjs.Dayjs }
-    ) {
-        this.timelineView = timelineView;
-        this.sharedState = sharedState;
-        this.timestep = this.sharedState.timestep;
-
+    constructor(options: { start: dayjs.Dayjs; end: dayjs.Dayjs }) {
         const arg = document.createElement('div');
 
-        rootElement.appendChild(this.timelineView.node);
         this.start = options.start;
         this.end = options.end;
+    }
+
+    AddSharedState(sharedState: SharedState) {
+        this.sharedState = sharedState;
+        return this;
+    }
+
+    AddTimelineView(timelineView: ITimelineView) {
+        this.timelineView = timelineView;
         this.timelineView.on('contextmenu', (event: Event) => event.preventDefault());
+        return this;
     }
 
     get timeframe(): number {
@@ -71,11 +71,6 @@ export class TimelineControl implements ITimelineControl {
                         <number>b / this.timelineView.getBoundingClientRect().width;
                     a = a > 0 ? 1 : -1;
 
-                    // console.log(zoom);
-                    // console.log(factor);
-                    // console.log(-a * zoom * factor);
-                    // console.log(a * zoom * (1 - factor));
-
                     this.start = this.start.add(-a * zoom * factor, 'second');
 
                     this.end = this.end.add(a * zoom * (1 - factor), 'second');
@@ -91,11 +86,4 @@ export class TimelineControl implements ITimelineControl {
     render() {
         this.timelineView.render(this.start, this.end);
     }
-
-    // start(){
-    //     this.initialized = true;
-    //     this.root?.appendChild(this.props.dom.root)
-    //     this.timeline.updateScale('stepsize');
-    //     this.render()
-    // }
 }

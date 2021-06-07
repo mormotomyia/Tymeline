@@ -6,7 +6,7 @@ import { IObservable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
 import { DataViewItem } from '../view/dataView/dataViewItem';
 import { snap } from '../../util/snap';
-import { IDataControl, ISharedState } from './MainControl';
+import { IDataControl, ISharedState, SharedState } from './MainControl';
 import TimeStep from '../view/timelineView/TimeStep';
 import { IDataView } from '../model/ViewPresenter/IDataView';
 
@@ -68,12 +68,18 @@ export class DataControl implements IDataControl {
     sharedState: ISharedState;
     timestep: TimeStep;
 
-    constructor(dataView: IDataView, sharedState: ISharedState) {
+    constructor() {}
+
+    addSharedState(sharedState: SharedState) {
         this.sharedState = sharedState;
         this.timestep = this.sharedState.timestep;
+        return this;
+    }
+
+    addDataView(dataView: IDataView) {
         this.dataView = dataView;
-        // this.dataView = new MormoDataView(rootElement);
         this.dataView.subscribe(this);
+        return this;
     }
 
     public subscribe(observer: IObserver) {
@@ -390,6 +396,7 @@ export class DataControl implements IDataControl {
     }
 
     updateTable(objects: Array<ITableData>) {
+        console.log(objects);
         objects.forEach((element) => {
             this.updateTableItem(element);
         });

@@ -28,22 +28,26 @@ export class ContextMenuView extends HTMLElement implements IContextMenuView {
     visible = false;
     sharedstate: ISharedState;
     dataService: IDataService;
-
-    // contextMenu: HTMLDivElement = document.createElement('div');
     rootElement: HTMLElement;
     subscribers: Array<IObserver> = [];
 
-    constructor(
-        rootElement: HTMLElement,
-        sharedState: ISharedState,
-        dataService: IDataService
-    ) {
+    constructor() {
         super();
-        this.dataService = dataService;
-        this.sharedstate = sharedState;
-        this.rootElement = rootElement;
+
         this.dialog = new DialogComponentContainer();
         this.appendChild(this.dialog);
+    }
+    setContainer(container: HTMLElement): IContextMenuView {
+        this.rootElement = container;
+        return this;
+    }
+    addSharedState(sharedState: ISharedState): IContextMenuView {
+        this.sharedstate = sharedState;
+        return this;
+    }
+    addDataService(dataService: any): IContextMenuView {
+        this.dataService = dataService;
+        return this;
     }
     public subscribe(observer: IObserver) {
         this.subscribers.push(observer);

@@ -5,8 +5,11 @@ import { IObservable, Observable } from '../../observer/Observable';
 import { IObserver, Observer } from '../../observer/Observer';
 import { CustomButton } from '../custom-components/customButton';
 import { TableData } from '../model/TableData';
+import { IDataView } from '../model/ViewPresenter/IDataView';
+import { ITimelineView } from '../model/ViewPresenter/ITimelineView';
 import { IMainControl } from '../mormoTable';
-import { IDataService } from '../services/DataService';
+import { DataService } from '../services/DataService';
+import { IDataService } from '../services/serviceSpec/DataServiceSpec';
 import { MormoDataView } from '../view/dataView/dataView';
 import { MainView } from '../view/mainView';
 import { TimelineView } from '../view/timelineView/TimelineView';
@@ -31,9 +34,16 @@ export class SharedState implements ISharedState {
 
 export interface IMainView extends IObservable, HTMLElement {
     render(): void;
+    setContainer(container: HTMLElement): IMainView;
+    addOptions(tableOptions?: any): IMainView;
+    addDataView(dataView: IDataView): IMainView;
+    addTimelineView(timelineView: ITimelineView): IMainView;
 }
 
 export interface ITimelineControl {
+    AddTimelineView(timelineView: ITimelineView): ITimelineControl;
+    AddSharedState(sharedState: SharedState): ITimelineControl;
+
     start: dayjs.Dayjs;
     end: dayjs.Dayjs;
     timeframe: number;
@@ -49,9 +59,16 @@ export interface IDataControl extends IObservable, IObserver {
     setTable(arg: Array<ITableData>): void;
     updateTable(arg: Array<ITableData>): void;
     render(start: dayjs.Dayjs, end: dayjs.Dayjs): void;
+    addDataView(dataView: IDataView): IDataControl;
+    addSharedState(sharedState: ISharedState): IDataControl;
 }
 
 export interface IContextMenuControl extends IObserver {
+    addContextMenuView(contextMenuView: IContextMenuView): IContextMenuControl;
+    addDataService(dataService: IDataService): IContextMenuControl;
+    addSharedState(sharedState: ISharedState): IContextMenuControl;
+    setContainer(container: HTMLElement): IContextMenuControl;
+
     dataService: IDataService;
     visible: boolean;
     contextMenuView: IContextMenuView;
@@ -72,25 +89,32 @@ export class MainControl implements IMainControl {
     deltaX = 0;
     draggable = true;
 
-    constructor(
-        mainView: IMainView,
-        contextMenuControl: IContextMenuControl,
-        timelineControl: ITimelineControl,
-        dataControl: IDataControl
-    ) {
+    constructor() {}
+
+    start() {
+        this.render();
+    }
+
+    addMainView(mainView: IMainView) {
         this.mainView = mainView;
         this.mainView.subscribe(this);
+        return this;
+    }
 
-        // this needs to be moved to the respective control points?
-
-        this.timelineControl = timelineControl;
-        this.dataControl = dataControl;
-
+    addContextMenuControl(contextMenuControl: IContextMenuControl) {
         this.contextMenuControl = contextMenuControl;
+        return this;
+    }
 
+    addDataControl(dataControl: IDataControl) {
+        this.dataControl = dataControl;
         this.dataControl.subscribe(this);
-        // this.timelineControl
-        this.render();
+        return this;
+    }
+
+    addTimelineControl(timelineControl: ITimelineControl) {
+        this.timelineControl = timelineControl;
+        return this;
     }
 
     public setTable(argument: Array<ITableData>) {
@@ -177,6 +201,7 @@ export class MainControl implements IMainControl {
     }
 
     private render() {
+        console.log(this.timelineControl);
         this.mainView.render();
         this.timelineControl.render();
         this.dataControl.render(this.timelineControl.start, this.timelineControl.end);

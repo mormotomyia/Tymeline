@@ -1,8 +1,11 @@
 import { CustomNoTemplateHTMLElement } from 'customhtmlbase';
+import { time } from 'node:console';
 import { IObservable, Observable } from '../../observer/Observable';
 import { IObserver } from '../../observer/Observer';
 import { IMainView } from '../control/MainControl';
 import { CustomButton } from '../custom-components/customButton';
+import { IDataView } from '../model/ViewPresenter/IDataView';
+import { ITimelineView } from '../model/ViewPresenter/ITimelineView';
 
 @CustomNoTemplateHTMLElement({
     selector: 'main-view',
@@ -10,14 +13,31 @@ import { CustomButton } from '../custom-components/customButton';
 })
 export class MainView extends HTMLElement implements IMainView {
     subscribers: Array<IObserver> = [];
-    constructor(root: HTMLElement, tableOptions?: any) {
+    constructor() {
         super();
         this.oncontextmenu = (event) => event.preventDefault();
-
-        root.appendChild(this);
-        this.styleItem(tableOptions);
-
         this.addEvents();
+    }
+
+    setContainer(container: HTMLElement) {
+        container.appendChild(this);
+        return this;
+    }
+
+    addOptions(options: any) {
+        this.styleItem(options);
+        return this;
+    }
+
+    addDataView(dataView: IDataView) {
+        this.appendChild(dataView.asHtmlElement());
+        // dataView.asHtmlElement().style.height = '500px';
+        return this;
+    }
+
+    addTimelineView(timelineView: ITimelineView) {
+        this.append(timelineView.node);
+        return this;
     }
 
     public subscribe(observer: IObserver) {
@@ -40,7 +60,6 @@ export class MainView extends HTMLElement implements IMainView {
 
         const hammerview = new Hammer(this);
         this.onmousedown = (event) => this.publish('tap', event);
-        // hammerview.on('tap', (event) => this.publish('tap', event));
         hammerview.on('pan', (event) => this.publish('pan', event));
         hammerview.on('panstart', (event) => this.publish('panstart', event));
         hammerview.on('panend', (event) => this.publish('panend', event));
@@ -61,7 +80,6 @@ export class MainView extends HTMLElement implements IMainView {
             if (tableOptions.colorschema) {
                 this.style.color = `${tableOptions.colorschema.text}`;
                 this.style.backgroundColor = `${tableOptions.colorschema.background}`;
-                // this.timeContainer.style.borderColor = `${tableOptions.colorschema.borders}`;
             }
         }
     }

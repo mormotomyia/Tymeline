@@ -30,8 +30,6 @@ export class DataViewItem extends HTMLElement implements IObservable {
     constructor() {
         super();
 
-        // rootElement.appendChild(this);
-
         this.oncontextmenu = (event) => this.publish('contextMenu', event);
         this.hammerview = new Hammer(this);
         this.onmouseup = (event) => this.mouseDownEvent(<DataViewItem>event.target);

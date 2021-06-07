@@ -50,10 +50,20 @@ export class TimelineView extends HTMLElement implements ITimelineView {
     domItems: DomItems;
     subscribers: Array<IObserver> = [];
 
-    constructor(timestep: TimeStep) {
+    constructor() {
         super();
 
+        this.styleComponenet();
+
+        this.domItems = new DomItems();
+    }
+
+    addTimeStep(timestep: TimeStep) {
         this.timestep = timestep;
+        return this;
+    }
+
+    private styleComponenet() {
         this.style.position = 'absolute';
         this.style.bottom = '0';
         this.style.left = '0';
@@ -67,8 +77,6 @@ export class TimelineView extends HTMLElement implements ITimelineView {
         // this.style.borderWidth = 'thin';
         this.style.borderTopWidth = '4px';
         this.style.overflow = 'hidden';
-
-        this.domItems = new DomItems();
     }
 
     public get node(): Node {
@@ -95,23 +103,22 @@ export class TimelineView extends HTMLElement implements ITimelineView {
     }
 
     public updateScale(start: dayjs.Dayjs, end: dayjs.Dayjs) {
-        // console.log(this.timeframe)
-        // console.log(this.getBoundingClientRect().width);
-
         const minStep = end.diff(start) / (this.getBoundingClientRect().width / 80);
         const millis = end.diff(start);
+
         this.timestep.updateScale(
             start.subtract(millis / 10, 'millisecond'),
             end.add(millis / 10, 'millisecond'),
             minStep
         );
+        this.timestep.start();
     }
 
     public render(start: dayjs.Dayjs, end: dayjs.Dayjs): void {
         let count = 0;
-        this.timestep.start();
 
         this.updateScale(start, end);
+        this.timestep.start();
         this.domItems.clear();
 
         while (this.timestep.hasNext() && count < MAX) {
@@ -120,7 +127,6 @@ export class TimelineView extends HTMLElement implements ITimelineView {
             const isMajor = this.timestep.isMajor();
             const className = this.timestep.getClassName();
             const current = this.timestep.getCurrent();
-            // console.log(className)
             this.reuseDomComponent(
                 isMajor,
                 className,
@@ -130,7 +136,6 @@ export class TimelineView extends HTMLElement implements ITimelineView {
                 end
             );
         }
-
         this.domItems.redundantLegendMajor.forEach((element) => {
             element.parentNode?.removeChild(element);
         });

@@ -19,20 +19,25 @@ import { DataViewItem } from './dataViewItem';
 export class MormoDataView extends HTMLElement implements IDataView {
     rows: Array<Layer> = [];
     domItems: DomItems;
-    styleFunc?: () => void;
+    // styleFunc?: () => void;
     subscribers: Array<IObserver> = [];
 
-    constructor(rootElement: HTMLElement, styleFunc?: () => void) {
+    constructor(styleFunc?: () => void) {
         super();
         this.domItems = new DomItems();
-        this.style.height = `${rootElement.getBoundingClientRect().height - 50}px`;
+        // this.style.height = `${rootElement.getBoundingClientRect().height - 50}px`;
         this.style.overflowY = 'auto';
         this.style.overflowX = 'hidden';
         this.style.display = 'block';
+        this.style.height = 'inherit';
         this.className = 'mormo-items';
-        this.styleFunc = styleFunc;
-        rootElement.prepend(this);
-        if (this.styleFunc) this.styleFunc();
+
+        // this.styleFunc = styleFunc;
+        if (styleFunc) styleFunc();
+    }
+
+    asHtmlElement() {
+        return this;
     }
 
     emit(keyword: string, data: any) {
@@ -43,8 +48,6 @@ export class MormoDataView extends HTMLElement implements IDataView {
 
                 break;
         }
-        // console.log(keyword);
-        // console.log(data);
         this.publish(keyword, data);
     }
 

@@ -14,10 +14,20 @@ import {
     DialogComponent,
 } from '../custom-components/DialogComponents';
 import { IDataService } from '../services/DataService';
+import { IDataService } from '../services/serviceSpec/DataServiceSpec';
 import { ContextMenuView } from '../view/miscView/ContextMenuView';
-import { IContextMenuControl, ISharedState, MainControl } from './MainControl';
+import {
+    IContextMenuControl,
+    ISharedState,
+    MainControl,
+    SharedState,
+} from './MainControl';
 
 export interface IContextMenuView extends IObservable, IObserver {
+    setContainer(container: HTMLElement): IContextMenuView;
+    addSharedState(sharedState: ISharedState): IContextMenuView;
+    addDataService(dataService: IDataService): IContextMenuView;
+
     visible: boolean;
     rootElement: HTMLElement;
     dataService: IDataService;
@@ -42,28 +52,36 @@ export class ContextMenuControl implements IContextMenuControl {
     >;
     dataService: IDataService;
 
-    constructor(
-        rootElement: HTMLElement,
-        sharedState: ISharedState,
-        dataService: IDataService
-    ) {
-        this.sharedState = sharedState;
-        // this needs to be an interface
-        this.dataService = dataService;
-        this.contextMenuView = new ContextMenuView(
-            rootElement,
-            this.sharedState,
-            this.dataService
-        );
+    addContextMenuView(contextMenuView: IContextMenuView): IContextMenuControl {
+        this.contextMenuView = contextMenuView;
+        this.contextMenuView.subscribe(this);
+        this.contextMenuView.setMenu(this.viewOptions);
 
+        return this;
+    }
+
+    addDataService(dataService: IDataService) {
+        this.dataService = dataService;
+        return this;
+    }
+
+    addSharedState(sharedState: SharedState) {
+        this.sharedState = sharedState;
+        return this;
+    }
+
+    constructor() {
         this.viewOptions = new Map();
         this.viewOptions.set('info', { kind: CustomButton, dialog: DataInfoDialog });
         this.viewOptions.set('modify', { kind: CustomButton, dialog: DataModifyDialog });
         this.viewOptions.set('delete', { kind: CustomButton, dialog: DataDeleteDialog });
         this.viewOptions.set('align', { kind: CustomButton, dialog: DataAlignDialog });
-        this.contextMenuView.subscribe(this);
-        this.contextMenuView.setMenu(this.viewOptions);
     }
+
+    setContainer(container: HTMLElement) {
+        return this;
+    }
+
     public setContextMenu(event: MouseEvent) {
         this.targetItem = <HTMLElement>event.target;
         console.warn('here!');
@@ -108,7 +126,6 @@ export class ContextMenuControl implements IContextMenuControl {
                         this.viewOptions.get('align').dialog,
                         this.targetItem.id
                     );
-                // this.contextMenuView.renderDialog('Align', this.menuLocation.id);
                 break;
 
             default:
