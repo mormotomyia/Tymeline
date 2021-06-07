@@ -27,6 +27,7 @@ import { IDataService } from './components/services/serviceSpec/DataServiceSpec'
 import { IDataView } from './components/model/ViewPresenter/IDataView';
 import { ITimelineView } from './components/model/ViewPresenter/ITimelineView';
 import { ContextMenuView } from './components/view/miscView/ContextMenuView';
+import { CreationView } from './components/view/creationView/creationViewContainer';
 
 const root = document.getElementsByTagName('body')[0];
 const options = {
@@ -131,6 +132,8 @@ class TymelineControl {
         this.mainView.setContainer(root);
         this.mormoTable.setContainer(root).setMainControl(this.mainControl);
         this.mormoTable.start();
+        const creationview = new CreationView();
+        creationview.setContainer(root);
     }
 
     public async start() {

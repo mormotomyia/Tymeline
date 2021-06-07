@@ -13,8 +13,8 @@
             timeElement.style.borderColor = 'Black' */
 }
 .mormo-timeline {
-    position: relative;
-    width: fit-content;
+    /* position: relative; */
+    /* width: fit-content; */
     /* overflow: hidden auto; */
 }
 .mormo-inner-container {
